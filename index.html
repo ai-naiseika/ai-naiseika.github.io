@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; require-trusted-types-for 'script'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>AI内製化工房 ─ 工房の地図</title>
+<meta name="description" content="AIと二人三脚で、ひとりでは作れなかったものを。AI内製化工房の作品と連載への入口です。">
+<link rel="canonical" href="https://ai-naiseika.github.io/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="AI内製化工房">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="AI内製化工房 ─ 工房の地図">
+<meta property="og:description" content="本をひらくと、森のまん中に世界樹が起き上がる。AI内製化工房の作品と連載への入口です。">
+<meta property="og:url" content="https://ai-naiseika.github.io/">
+<meta property="og:image" content="https://ai-naiseika.github.io/og.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="淡い水彩の森のまん中で、ひらいた本から世界樹が起き上がっている絵">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.png" type="image/png" sizes="64x64">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top"><p class="brand">AI内製化工房</p><button class="sound" id="sound" type="button">紙の音：あり</button></header>
+<main>
+  <section class="map" aria-label="工房の地図">
+   <div class="stage-wrap" id="stageWrap">
+    <div class="stage" id="stage">
+      <img class="forest-c" src="img/forest_c.webp" alt="" width="390" height="640">
+      <img class="arch" src="img/arch.webp" alt="" width="390" height="640" fetchpriority="high">
+      <span class="book-shadow" aria-hidden="true"></span>
+      <div class="scene" aria-hidden="true">
+        <div class="book" id="book">
+          <span class="thick thick-r"></span><span class="thick thick-l"></span>
+          <div class="page-r"><img src="img/spread.webp" alt="" width="320" height="200"></div>
+          <span class="fs fs-roots"></span><span class="fs fs-spring"></span><span class="fs fs-cave"></span><span class="fs fs-tree"></span>
+          <div class="flat f-roots"><img src="img/f_roots.webp" alt="" width="200" height="110"></div>
+          <div class="flat f-spring"><img src="img/f_spring.webp" alt="" width="150" height="150"><img class="resident r-elf" src="img/r_elf.webp" alt="" width="29" height="56"></div>
+          <div class="flat f-cave"><img src="img/f_cave.webp" alt="" width="150" height="160"></div>
+          <div class="flat f-tree"><img src="img/f_tree.webp" alt="" width="260" height="340"><img class="resident r-fairy" src="img/r_fairy.webp" alt="" width="33" height="30"></div>
+          <div class="flat f-cloud"><img src="img/f_cloud.webp" alt="" width="320" height="400"></div>
+          <div class="cover">
+            <div class="cv-front"><img src="img/cover.webp" alt="" width="160" height="200"><span class="cv-title"><span class="cv-s">AI内製化工房の</span><span class="cv-l">地図</span></span></div>
+            <div class="cv-back"><img src="img/spread.webp" alt="" width="320" height="200"></div>
+          </div>
+        </div>
+      </div>
+      <span class="fairy" aria-hidden="true"></span>
+      <button class="open-hit" id="openBtn" type="button" aria-label="本をひらく"></button>
+      <div class="labels" id="labels"></div>
+      <button class="mini skip" id="skip" type="button" hidden>とばす</button>
+      <button class="mini close-book" id="closeBook" type="button" hidden>本を閉じる</button>
+    </div>
+    <div class="forest-wide" aria-hidden="true"></div>
+   </div>
+    <p class="prompt" id="prompt">本をひらいて、行き先を選んでください</p>
+  </section>
+
+  <nav class="places" aria-labelledby="placesTitle">
+    <h2 id="placesTitle">場所から選ぶ</h2>
+    <ul id="placeList"></ul>
+  </nav>
+
+  <section class="about" id="about" aria-labelledby="aboutTitle">
+    <h2 id="aboutTitle">工房について</h2>
+    <p>AI内製化工房 MITA は、経営者のための連載「AI内製化の羅針盤」を書いている工房です。</p>
+    <p>会社の道具も、遊びのカードも、音楽の映像も、作り方は同じです。AIに「こう作りたい」を渡して、対話で育てています。</p>
+    <p>この地図の世界樹は、作品が増えるたびに育っていきます。内製化も、育てるものだから。</p>
+    <div id="aboutNotice"></div>
+    <h3>つながる</h3>
+    <ul class="links" id="links"></ul>
+  </section>
+</main>
+<footer class="foot">
+  <p>制作：AI内製化工房 MITA</p>
+  <details>
+    <summary>ご利用にあたって</summary>
+    <p>このページと、ここから開く作品のご利用は、自己責任でお願いします。紹介やリンクは自由です。複製や、作り変えての再配布は禁止します。著作権は作者に帰属します。</p>
+    <p>この端末に残すのは、ひらいた場所の印だけです。どこにも送りません。紙の音は、この端末の中で作って鳴らしています。</p>
+  </details>
+</footer>
+
+<div class="sheet-bg" id="sheetBg" hidden></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+  <div class="sheet-head">
+    <p class="sh-sub" id="sheetSub"></p>
+    <h2 id="sheetTitle"></h2>
+    <p class="sh-line" id="sheetLine"></p>
+    <button class="sh-close" id="sheetClose" type="button">閉じる</button>
+  </div>
+  <div class="sheet-body" id="sheetBody"></div>
+</section>
+
+<script src="app.js"></script>
+</body>
+</html>

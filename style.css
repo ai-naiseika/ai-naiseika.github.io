@@ -1,0 +1,196 @@
+:root{
+  --paper:#fbf6ec;--paper2:#f4ecdc;--ink:#36463a;--ink2:#6a6b58;--apricot:#cf8a5c;--leaf:#7ea56a;--sky:#8fc2e2;
+  --serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","Noto Serif CJK JP",serif;
+  --sans:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic","Meiryo","Noto Sans JP",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}   /* display を書いた要素にも hidden を効かせる（Skill viz-3d の教訓） */
+html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-text-size-adjust:100%}
+body{overflow-x:hidden}
+button{font:inherit;color:inherit}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--apricot);outline-offset:2px}
+.top{position:relative;text-align:center;padding:14px 16px 0}
+.brand{margin:0;font-family:var(--serif);font-size:15px;letter-spacing:.32em;color:var(--ink2)}
+.sound{position:absolute;right:10px;top:8px;min-height:28px;padding:4px 10px;border:1px solid rgba(150,110,70,.26);border-radius:14px;background:rgba(252,248,238,.9);font-size:11.5px;color:var(--ink2);cursor:pointer}
+
+/* ---------- 舞台（設計は 390×640。JS が画面に合わせて拡大縮小） ---------- */
+.stage-wrap{position:relative;width:100%;height:640px;overflow:hidden}
+.stage{position:absolute;z-index:1;left:50%;top:0;width:390px;height:640px;margin-left:-195px;transform-origin:50% 0}
+/* ひらくと、うろの壁が左右へ退いて（こちらへ抜けて）、広い森が現れる */
+.forest-c{position:absolute;left:0;top:0;width:390px;height:640px;display:block;pointer-events:none;opacity:0;transition:opacity 1.5s ease .3s}
+.open .forest-c{opacity:1}
+.arch{position:absolute;left:0;top:0;width:390px;height:640px;display:block;pointer-events:none;transform-origin:50% 52%;transition:transform 1.7s cubic-bezier(.4,0,.2,1) .12s,opacity 1.3s ease .4s}
+.open .arch{transform:scale(1.9);opacity:0}
+/* PC など舞台の左右に空きがある時：同じ森の全体を、舞台と同じ倍率で後ろに敷く（まん中は舞台の絵と重なる） */
+.forest-wide{display:none}
+.wide .forest-wide{display:block;position:absolute;z-index:0;top:0;left:50%;width:calc(1440px * var(--s, 1));height:calc(640px * var(--s, 1));margin-left:calc(-720px * var(--s, 1));
+  background:url(img/forest_c.webp) 50% 0/calc(390px * var(--s, 1)) calc(640px * var(--s, 1)) no-repeat,url(img/forest_w.webp) 0 0/100% 100% no-repeat;opacity:0;transition:opacity 1.5s ease .3s;
+  -webkit-mask-image:linear-gradient(to right,transparent,#000 4%,#000 96%,transparent);mask-image:linear-gradient(to right,transparent,#000 4%,#000 96%,transparent)}
+.wide .forest-c{display:none}   /* 左右に空きがある時は、まん中の絵も同じ1枚の層に描く（舞台のふちに境目の筋を出さない） */
+.stage.open~.forest-wide{opacity:1}
+.stage.instant~.forest-wide{transition:none!important}
+.wide .open .arch{-webkit-mask-image:linear-gradient(to right,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(to right,transparent,#000 14%,#000 86%,transparent)}
+.book-shadow{position:absolute;left:112px;top:540px;width:166px;height:18px;border-radius:50%;background:radial-gradient(closest-side,rgba(110,90,60,.28),rgba(110,90,60,0));transition:left 1.2s ease .1s,width 1.2s ease .1s}
+.open .book-shadow{left:30px;width:330px}
+.scene{position:absolute;inset:0;perspective:560px;perspective-origin:50% 26%;pointer-events:none}   /* 近めの視点：見開きの縁が奥へすぼまり、床に見える */
+.book{position:absolute;left:35px;top:348px;width:320px;height:200px;transform-style:preserve-3d;transform-origin:50% 100%;transform:translateX(-80px) rotateX(16deg);transition:transform 1.2s cubic-bezier(.45,0,.25,1) .1s}
+.open .book{transform:translateX(0) rotateX(62deg)}
+.page-r{position:absolute;left:160px;top:0;width:160px;height:200px;overflow:hidden}
+.page-r img{position:absolute;left:-160px;top:0;width:320px;height:200px}
+.cover{position:absolute;left:160px;top:0;width:160px;height:200px;transform-style:preserve-3d;transform-origin:0 50%;transition:transform 1.1s cubic-bezier(.55,0,.3,1)}
+.open .cover{transform:rotateY(-180deg)}
+.cv-front,.cv-back{position:absolute;inset:0;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:2px 6px 6px 2px}
+.cv-front img{display:block;width:160px;height:200px}
+.cv-back{transform:rotateY(180deg);border-radius:6px 2px 2px 6px}
+.cv-back img{position:absolute;left:0;top:0;width:320px;height:200px}
+.cv-title{position:absolute;left:20px;right:20px;top:130px;height:42px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--serif);color:var(--ink);line-height:1.15}
+.cv-s{font-size:10px;letter-spacing:.08em;color:var(--ink2)}
+.cv-l{font-size:17px;letter-spacing:.3em;margin-left:.3em}
+
+/* 起き上がる紙：本の面に寝た細い帯 → 立ち上がる（本の傾きぶんを戻して、こちらを向く） */
+.flat{position:absolute;transform-origin:50% 100%;transform:rotateX(0deg) scaleY(.12);opacity:0;transition:transform .95s cubic-bezier(.2,1.32,.45,1),opacity .3s ease}
+.flat img{display:block;width:100%;height:100%}
+.f-roots{left:60px;top:76px;width:200px;height:110px}
+.f-spring{left:0;top:0;width:150px;height:150px}      /* 泉と洞窟は、後ろの茂みの紙ごと立つ（ページの直線の縁を見せない） */
+.f-cave{left:170px;top:-10px;width:150px;height:160px}
+.f-tree{left:30px;top:-236px;width:260px;height:340px}
+.f-cloud{left:0;top:-354px;width:320px;height:400px}
+.open .flat{transform:rotateX(-62deg) scaleY(1);opacity:1}
+.open .f-roots{transition-delay:1s,1s}
+.open .f-spring,.open .f-cave{transition-delay:1.3s,1.3s}
+.open .f-tree{transition-delay:1.62s,1.62s;transition-duration:1.1s,.3s}
+.open .f-cloud{transition-delay:2s,2s;transition-duration:1.1s,.3s}
+
+/* 本の紙の厚み（ページの手前の縁に、重なった紙の線）。左の束は表紙がひらいてから見える */
+.thick{position:absolute;top:200px;width:160px;height:7px;transform-origin:50% 0;transform:rotateX(90deg);
+  background:repeating-linear-gradient(to bottom,rgba(150,118,78,.34) 0 .6px,rgba(0,0,0,0) .6px 1.5px),linear-gradient(#f7efde,#efe4cc)}
+.thick-r{left:160px}
+.thick-l{left:0;opacity:0;transition:opacity .2s ease .9s}
+.open .thick-l{opacity:1}
+/* 起き上がった紙が見開きに落とす影（床に立っていると分かる） */
+.fs{position:absolute;height:16px;border-radius:50%;background:radial-gradient(closest-side,rgba(105,85,55,.46),rgba(105,85,55,0));transform:translateZ(.4px);opacity:0;transition:opacity .6s ease}
+.fs-roots{left:52px;top:178px;width:216px}
+.fs-spring{left:2px;top:142px;width:146px}
+.fs-cave{left:172px;top:142px;width:146px}
+.fs-tree{left:96px;top:94px;width:128px;height:20px}
+.open .fs{opacity:1}
+.open .fs-roots{transition-delay:1.1s}
+.open .fs-spring,.open .fs-cave{transition-delay:1.4s}
+.open .fs-tree{transition-delay:1.75s}
+/* 住人：ひらき終わった後の余韻の中で、ゆっくり現れる */
+.flat .resident{position:absolute;opacity:0;transition:opacity 1.4s ease 4.4s}
+.open .flat .resident{opacity:1}
+.flat .r-elf{left:96px;top:58px;width:29px;height:56px;transform-origin:50% 100%;animation:sway 9s ease-in-out infinite}
+.flat .r-fairy{left:180px;top:122px;width:33px;height:30px;animation:hover 6s ease-in-out infinite;filter:drop-shadow(0 0 3px rgba(255,222,160,.9))}
+@keyframes sway{0%,100%{transform:rotate(-.8deg)}50%{transform:rotate(.8deg)}}
+@keyframes hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
+
+/* 妖精の光 */
+.fairy{position:absolute;left:189px;top:292px;width:12px;height:12px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,#fffbe8 0 28%,rgba(255,224,150,.9) 46%,rgba(255,214,150,0) 72%);box-shadow:0 0 16px 7px rgba(255,212,140,.42);
+  animation:bob 3.4s ease-in-out infinite;transition:left 1.1s ease-in-out 2.5s,top 1.1s ease-in-out 2.5s}
+.open .fairy{left:var(--fx,150px);top:var(--fy,150px)}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+
+.open-hit{position:absolute;inset:0;width:100%;height:100%;background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.open .open-hit{display:none}
+
+/* 場所の札 */
+.labels{position:absolute;inset:0;pointer-events:none}
+.label{position:absolute;display:flex;align-items:center;gap:6px;min-height:36px;padding:5px 11px 5px 9px;border:1px solid rgba(150,110,70,.32);border-radius:18px;
+  background:rgba(252,248,238,.93);box-shadow:0 2px 8px rgba(110,90,60,.16);cursor:pointer;white-space:nowrap;
+  transform:translate(-50%,-50%) scale(.85);opacity:0;pointer-events:none;transition:opacity .5s ease,transform .5s ease}
+.label .dot{width:9px;height:9px;border-radius:50%;flex:none;background:radial-gradient(circle,#fff6d8 0 30%,#f2b77e 70%);box-shadow:0 0 8px 2px rgba(242,183,126,.6)}
+.label.visited .dot{background:radial-gradient(circle,#f3f9e8 0 30%,#8fb978 70%);box-shadow:0 0 6px 1px rgba(143,185,120,.5)}
+.label .t{display:flex;flex-direction:column;line-height:1.15;text-align:left}
+.label .n{font-family:var(--serif);font-size:13.5px;letter-spacing:.04em}
+.label .s{font-size:10px;color:var(--ink2)}
+.open .label{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:auto}
+
+.mini{position:absolute;top:8px;right:10px;padding:6px 12px;border:1px solid rgba(150,110,70,.3);border-radius:16px;background:rgba(252,248,238,.85);font-size:12px;color:var(--ink2);cursor:pointer}
+.prompt{margin:4px 16px 0;text-align:center;font-family:var(--serif);font-size:15px;letter-spacing:.04em;color:var(--ink2);min-height:1.5em}
+
+/* 消す時・とばす時 */
+.instant,.instant *{transition:none!important}
+
+/* ---------- 下の並び ---------- */
+main>nav,main>section.about{max-width:560px;margin:0 auto;padding:0 16px}
+.places h2,.about h2{font-family:var(--serif);font-weight:normal;font-size:18px;letter-spacing:.08em;margin:30px 0 10px;color:var(--ink)}
+.places ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.place-btn{width:100%;display:flex;align-items:baseline;gap:10px;padding:12px 14px;border:1px solid rgba(150,110,70,.25);border-radius:10px;background:#fffdf7;text-align:left;cursor:pointer}
+.place-btn .n{font-family:var(--serif);font-size:16px}
+.place-btn .s{font-size:12.5px;color:var(--ink2)}
+.place-btn .c{margin-left:auto;font-size:12px;color:var(--ink2)}
+.about p{line-height:1.85;font-size:15px;margin:0 0 10px}
+.about h3{font-size:14px;font-weight:normal;color:var(--ink2);margin:18px 0 6px}
+.links{list-style:none;margin:0;padding:0}
+.links li{border-top:1px dashed rgba(150,110,70,.3)}
+.links a{display:block;padding:12px 2px;text-decoration:none;font-size:15px}
+.links a::after{content:" ↗";color:var(--apricot)}
+.foot{max-width:560px;margin:34px auto 0;padding:18px 16px 40px;border-top:1px solid rgba(150,110,70,.22);font-size:12.5px;color:var(--ink2)}
+.foot p{margin:0 0 8px}
+.foot details p{line-height:1.7}
+.foot summary{cursor:pointer}
+
+/* 工房の立て札（注意書き）：板に2本の脚。字は見る人の端末のフォント */
+.sign{position:relative;margin:14px 4px 26px;padding:11px 14px 10px;border:1px solid rgba(140,100,60,.36);border-radius:7px;
+  background:linear-gradient(180deg,#f8eed9,#f1e3c6);box-shadow:0 2px 0 rgba(140,100,60,.2),inset 0 0 0 3px rgba(255,251,240,.5)}
+.sign::before,.sign::after{content:"";position:absolute;bottom:-14px;width:6px;height:13px;border-radius:0 0 2px 2px;background:linear-gradient(#c8a77d,#b08d63)}
+.sign::before{left:20%}
+.sign::after{right:20%}
+.sign>p{margin:0;font-size:13px;line-height:1.75;color:#5b4b37}
+.sign>p+p{margin-top:5px}
+
+/* ---------- 場所の一覧（下から出る紙） ---------- */
+.sheet-bg{position:fixed;z-index:20;inset:0;background:rgba(60,55,40,.28);opacity:0;transition:opacity .3s}
+.sheet-bg.show{opacity:1}
+.sheet{position:fixed;z-index:21;left:0;right:0;bottom:0;max-height:84vh;display:flex;flex-direction:column;background:var(--paper);border-radius:16px 16px 0 0;box-shadow:0 -6px 24px rgba(80,70,50,.2);transform:translateY(102%);transition:transform .34s cubic-bezier(.2,.8,.3,1)}
+.sheet.show{transform:translateY(0)}
+.sheet-head{position:relative;padding:18px 18px 10px;border-bottom:1px solid rgba(150,110,70,.18)}
+.sh-sub{margin:0;font-size:12px;color:var(--ink2);letter-spacing:.06em}
+.sheet-head h2{margin:2px 0 6px;font-family:var(--serif);font-weight:normal;font-size:21px;letter-spacing:.06em}
+.sh-line{margin:0;font-size:13.5px;line-height:1.6;color:var(--ink2);padding-right:60px}
+.sh-close{position:absolute;top:14px;right:14px;padding:7px 13px;border:1px solid rgba(150,110,70,.3);border-radius:16px;background:#fffdf7;font-size:13px;cursor:pointer}
+.sheet-body{overflow-y:auto;padding:4px 18px 28px;-webkit-overflow-scrolling:touch}
+.grp{margin:16px 0 6px;font-size:12.5px;letter-spacing:.08em;color:var(--apricot)}
+.items{list-style:none;margin:0;padding:0}
+.item>a,.item>.box{position:relative;display:block;width:100%;padding:11px 26px 11px 0;border:0;border-bottom:1px dashed rgba(150,110,70,.25);background:none;text-align:left;text-decoration:none;cursor:pointer}
+.it-name{display:block;font-size:14.5px;line-height:1.5}
+.it-note{display:block;font-size:12.5px;line-height:1.5;color:var(--ink2);margin-top:2px}
+.it-meta{display:block;font-size:11px;color:var(--ink2);margin-top:3px;letter-spacing:.04em}
+.kind{display:inline-block;padding:0 6px;margin-right:6px;border-radius:8px;background:#eef3e4;color:#4f6a45}
+.kind.k-見る{background:#e6f0f7;color:#3f5f75}
+.kind.k-読む{background:#f6ece1;color:#7a5638}
+.item>a::after{content:"↗";position:absolute;right:4px;top:12px;color:var(--apricot)}
+.item>.box::after{content:"…";position:absolute;right:4px;top:10px;color:var(--apricot)}
+
+/* 作品の状態の印（工房の世界の物）：調整中＝つぼみ・作りかけ＝双葉・準備中＝種 */
+.stat{display:inline-flex;align-items:center;gap:4px;padding:0 7px 0 5px;margin-right:6px;border-radius:8px;background:#fbede4;color:#8a5636}
+.item[data-status="作りかけ"] .stat{background:#edf4e3;color:#4b6840}
+.item[data-status="準備中"] .stat{background:#f0ede2;color:#6c6552}
+.mk{position:relative;display:inline-block;flex:none}
+.mk.bud{width:9px;height:11px}
+.mk.bud::before{content:"";position:absolute;left:1px;top:1px;width:7px;height:7px;border-radius:50% 0 50% 50%;transform:rotate(-45deg);background:radial-gradient(circle at 40% 60%,#f8cfc6,#e0897d)}
+.mk.bud::after{content:"";position:absolute;left:0;bottom:0;width:9px;height:5px;border-radius:0 0 5px 5px;background:#7ea56a}
+.mk.sprout{width:11px;height:10px;background:linear-gradient(#6f9a5c,#6f9a5c) 50% 100%/1.5px 6px no-repeat}
+.mk.sprout::before,.mk.sprout::after{content:"";position:absolute;top:1px;width:6px;height:4px;background:#7ea56a}
+.mk.sprout::before{left:0;border-radius:5px 0 5px 0;transform:rotate(-18deg)}
+.mk.sprout::after{right:0;border-radius:0 5px 0 5px;transform:rotate(18deg)}
+.mk.seed{width:7px;height:9px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 40% 35%,#d4ab7e,#a7784b)}
+
+/* 住人（妖精）の吹き出し：完成でない作品を押すと出る */
+.bubble{display:flex;align-items:flex-start;gap:7px;padding:9px 0 12px 2px;animation:pop .35s ease-out}
+.bubble .who{flex:none;width:33px;height:30px;margin-top:6px;filter:drop-shadow(0 0 3px rgba(255,222,160,.9));animation:hover 6s ease-in-out infinite}
+.say{position:relative;flex:1;min-width:0;padding:9px 12px 10px;border:1px solid rgba(150,110,70,.3);border-radius:14px;background:#fffdf7;box-shadow:0 2px 6px rgba(110,90,60,.1)}
+.say::before{content:"";position:absolute;left:-6px;top:14px;width:10px;height:10px;background:#fffdf7;border-left:1px solid rgba(150,110,70,.3);border-bottom:1px solid rgba(150,110,70,.3);transform:rotate(45deg)}
+.words{margin:0;font-size:13.5px;line-height:1.7}
+.peek{display:inline-block;margin-top:7px;padding:6px 14px;border:1px solid rgba(207,138,92,.5);border-radius:15px;background:#fff7ef;color:#93552f;font-size:13px;text-decoration:none}
+@keyframes pop{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+@media (min-width:700px){
+  .sheet{left:50%;right:auto;bottom:auto;top:50%;width:560px;max-height:80vh;border-radius:16px;transform:translate(-50%,-46%);opacity:0;transition:transform .3s,opacity .3s}
+  .sheet.show{transform:translate(-50%,-50%);opacity:1}
+}
+@media (prefers-reduced-motion:reduce){.fairy,.flat .r-elf,.flat .r-fairy,.bubble,.bubble .who{animation:none}}
