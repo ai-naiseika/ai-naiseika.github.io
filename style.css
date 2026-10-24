@@ -40,6 +40,23 @@ a{color:inherit}
 .wide .forest-c{display:none}   /* 左右に空きがある時は、まん中の絵も同じ1枚の層に描く（舞台のふちに境目の筋を出さない） */
 .stage.open~.forest-wide{opacity:1}
 .stage.instant~.forest-wide{transition:none!important}
+/* 森の木（風で揺れる部品・白地）：森の地に掛け算で重ねる（森の膜は掛け算なので、前の1枚の森と同じ色）。
+   箱でくくらない（くくると掛け算が箱の中だけになり、白地が出る）。スマホは舞台の中・PC は舞台の外の森の層の上。JS が根元を軸にしならせる */
+.tr{position:absolute;display:block;left:0;top:0;pointer-events:none;mix-blend-mode:multiply;background-repeat:no-repeat}
+.tr.s0{background-image:url(img/trees_c.webp)}
+.tr.s1{background-image:url(img/trees_w.webp)}
+.wide .stage>.tr,.trees-w{display:none}
+.wide .trees-w{display:block}
+.trees-w>.tr{opacity:0;transition:opacity .9s ease .1s}
+.stage.open~.trees-w>.tr{opacity:1}
+.stage.instant~.trees-w>.tr{transition:none!important}
+/* 鳥（メジロ・飛び出す紙）：5コマを横に並べた絵。JS がコマと位置を決める（足の先が止まる点） */
+.birds{position:absolute;left:0;top:0}
+.bird{position:absolute;left:0;top:0;width:30px;height:22px;background:url(img/bird.webp) 0 0/150px 22px no-repeat;transform-origin:14px 20.6px;pointer-events:none}
+/* 雲の影：地面を横切る淡い影（掛け算）。JS が流す */
+.t-cloud{position:absolute;left:0;top:28%;width:70%;height:74%;opacity:0;mix-blend-mode:multiply;
+  background:radial-gradient(closest-side,rgba(64,74,100,.3),rgba(64,74,100,.14) 62%,rgba(64,74,100,0))}
+.gleaf{position:absolute;left:0;top:0;width:9px;height:5px;border-radius:9px 0;background:linear-gradient(135deg,#a7c98a,#6f9a5c);opacity:0}
 
 /* ---------- 時刻の光：見る人の端末の本当の時刻で、JS が色と陽の位置の変数を決める（ひらいた時だけ・閉じた本は変えない） ----------
    空と地面の色は掛け算（紙の白さは残る）・陽の光と光の筋は足し算・夜は星。上下のふちは紙の色へなじませる */
