@@ -35,8 +35,9 @@
   // 鳴らす音：[楽器, 高さ（MIDI）, 秒, 強さ]
   const at = (inst, amp, list) => list.map(([m, t]) => [inst, m, t, amp]);
   const SONG = {
-    // 本をひらく：鈴の「シャン、シャン、シャン」（少しずつ大きく）→ 世界樹が起きる所で澄んだひと鳴り。後ろに、ごく小さなチェレスタ
-    open: [['shake', 0, 0.05, 0.02], ['shake', 0, 0.29, 0.026], ['shake', 0, 0.53, 0.032], ['ping', [114, 117], 1.05, 0.03]]
+    // 本をひらく：鈴の「シャン、シャン、シャン」（少しずつ大きく）。後ろに、ごく小さなチェレスタ
+    //   世界樹が起きる所の澄んだひと鳴りは外した（本人 2026-10-25「木が立ち上がる時に別なピロンみたいな音が鳴るので、ならないほうがいい」）
+    open: [['shake', 0, 0.05, 0.02], ['shake', 0, 0.29, 0.026], ['shake', 0, 0.53, 0.032]]
       .concat(at('celesta', 0.12, [[86, 0.7], [90, 0.82], [93, 0.94], [98, 1.06]])),
     roots: at('musicbox', 0.8, [[81, 0], [78, 0.17], [74, 0.34], [76, 0.51], [78, 0.68], [81, 0.85], [86, 1.1]]).concat(at('musicbox', 0.35, [[62, 0]])),   // オルゴール
     branch: at('handbell', 0.7, [[74, 0], [78, 0.24], [81, 0.48], [86, 0.78]]),   // ハンドベル
@@ -106,14 +107,14 @@
     let s = 11; const R = () => (s = (s * 16807) % 2147483647) / 2147483647, L = LEVEL[name];
     for (const [i, m, t, a] of SONG[name]) {
       if (i === 'shake') shake(c, G, a * L, t0 + t, R);
-      else if (i === 'ping') m.forEach((x, k) => tink(c, G, hz(x), a * L * (k ? 0.6 : 1), t0 + t + k * 0.03, 0.7, 0.006));   // 澄んだひと鳴り（高さは五音音階）
       else voice(c, G, [i, m, t0 + t, a * L]);
     }
   }
   let muted = false, actx = null, graph = null;
   const played = [];
   function ctx() {   // さわった時（押した時）にだけ作る
-    if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); graph = chain(actx); } catch (e) { actx = null; } }
+    //   音の計算の余裕は大きく取る（playback）。既定の余裕の小さい形だと、スマホが忙しい時に曲が割れ・飛ぶ（本人 2026-10-25）。鈴が鳴るのは 0.01〜0.1 秒ほど遅れるだけ
+    if (!actx) { try { const AC = window.AudioContext || window.webkitAudioContext; try { actx = new AC({ latencyHint: 'playback' }); } catch (e) { actx = new AC(); } graph = chain(actx); } catch (e) { actx = null; } }
     if (actx && actx.state === 'suspended') actx.resume();
     return actx;
   }
@@ -182,18 +183,27 @@
     const t = actx.currentTime, cur = bgm.els[bgm.i], nxt = bgm.els[1 - bgm.i], s = TRACKS.get(no), changed = bgm.no !== no;
     bgm.x = true;
     if (nxt.no !== no) { nxt.a.src = s.file; nxt.no = no; }
-    nxt.a.currentTime = 0; nxt.a.play().catch(() => solo(cur, s, fade));
+    if (nxt.a.currentTime) nxt.a.currentTime = 0;   // 読みこんだ頭から（0 のままなら探し直さない）
+    nxt.a.play().catch(() => solo(cur, s, fade));
     nxt.g.gain.cancelScheduledValues(t); nxt.g.gain.setValueAtTime(0, t); nxt.g.gain.linearRampToValueAtTime(1, t + fade);
     cur.g.gain.cancelScheduledValues(t); cur.g.gain.setValueAtTime(cur.g.gain.value, t); cur.g.gain.linearRampToValueAtTime(0, t + fade);
     bgm.i = 1 - bgm.i; bgm.no = no;
     setTimeout(() => { if (bgm.els[bgm.i] !== cur) cur.a.pause(); bgm.x = false; }, fade * 1000 + 150);
     if (changed) { band(s); beat(s); }
   }
+  function bgmReady(no) {   // 次に流す曲を、裏の再生器に読みこんでおく（鳴らさない）。つなぎ目で読み始めると、スマホでは鳴り出しが遅れて、そこで音が途切れる
+    const nxt = bgm.els[1 - bgm.i];
+    if (nxt.no === no && nxt.a.currentTime === 0) return;
+    if (nxt.no !== no) { nxt.a.preload = 'auto'; nxt.a.src = TRACKS.get(no).file; nxt.no = no; }
+    nxt.a.currentTime = 0;
+  }
   function bgmLoop() {
     if (!bgm || !bgm.on || bgm.x) return;
     const cur = bgm.els[bgm.i], ov = Math.max(0.5, setting('overlap', 4));
-    if (this !== cur.a || !cur.a.duration || cur.a.duration - cur.a.currentTime > ov) return;
-    bgmPlay(choose(new Date(), sheetPlace) || cur.no, ov);
+    if (this !== cur.a || !cur.a.duration) return;
+    const left = cur.a.duration - cur.a.currentTime, no = choose(new Date(), sheetPlace) || cur.no;
+    if (left <= ov) bgmPlay(no, ov);
+    else if (left <= ov + 15) bgmReady(no);   // つなぎ目の 15 秒前から
   }
   function bgmOn() {
     if (!bgm || muted || bgm.on || document.hidden) return;
@@ -496,7 +506,7 @@
   // ---------- 森の時間：風・鳥・雲の影 ----------
   // 本人 2026-10-24「落ち葉だけよりも、森を抜ける風に背景の木々がわずかにざわめいたり、鳥が飛んだり止まったり、太陽（光）の位置が変わったり、自然にできるだけ近い感じで」
   //   木：1本（1組）ずつのばね。いつものそよ風と、ときどき端から端へ渡る突風に押されて、根元を軸にしなって戻る（行き過ぎて少し揺り返す）
-  //   鳥（メジロ）：昼だけ。飛んできて枝や洞窟の屋根に止まり、向きをかえ・ついばみ、しばらくして飛び去る。突風で飛び立つことも。遠くの空を群れが渡ることも
+  //   鳥（ヤマガラ）：昼だけ。飛んできて枝や洞窟の屋根に止まり、向きをかえ・ついばみ、しばらくして飛び去る。突風で飛び立つことも。遠くの空を群れが渡ることも
   //   雲の影：昼だけ。地面を横切り、その間は陽の光が薄れる。陽の位置そのものは見る人の時刻のまま（早回しにしない）
   const TR = DATA.trees, rnd = (a, b) => a + Math.random() * (b - a), now = () => performance.now() / 1000;
   const trees = [], gusts = [], birds = [];
@@ -623,9 +633,12 @@
     if (fr !== b.f) { b.f = fr; b.e.style.backgroundPosition = `${-fr * 30}px 0`; }
     b.e.style.transform = `translate(${(b.x - FOOT[0]).toFixed(1)}px,${(b.y - FOOT[1] + bob).toFixed(1)}px) scale(${b.face * b.sc},${b.sc})`;
   }
-  let raf = 0, lastT = 0, running = false, wtBase = '', wtA = 0, wtV = 0, nextGust = 0, nextBird = 0, nextCloud = 0, nextLeaf = 0, nextDrip = 0, nextStar = 0;
+  let raf = 0, pace = 0, lastT = 0, running = false, wtBase = '', wtA = 0, wtV = 0, nextGust = 0, nextBird = 0, nextCloud = 0, nextLeaf = 0, nextDrip = 0, nextStar = 0;
+  // 木と鳥を動かすのは、スマホは1秒30コマまで（PC は60）。動かすたびにページ全体の描き直しが走り、画面の速いスマホ（90〜120回）では
+  //   描き直しだけで手いっぱいになって曲が途切れた（本人 2026-10-25「スマホで音割れ・音飛び」。CPU を4倍遅くして、主スレッドの忙しさ 92% → 32%）
+  const GAP = 1000 / (matchMedia('(pointer: coarse)').matches ? 30 : 60) - 8;
   function tick(ms) {
-    raf = requestAnimationFrame(tick);
+    pace = setTimeout(() => { raf = requestAnimationFrame(tick); }, GAP);
     const t = ms / 1000, dt = Math.min(0.05, lastT ? t - lastT : 0.016), wide = wrap.classList.contains('wide');
     lastT = t;
     for (const tr of trees) {
@@ -657,7 +670,7 @@
     raf = requestAnimationFrame(tick);
   }
   function lifeStop() {
-    running = false; cancelAnimationFrame(raf); gusts.length = 0;
+    running = false; clearTimeout(pace); cancelAnimationFrame(raf); gusts.length = 0;
     for (const b of birds) b.e.remove(); birds.length = 0;
     for (const tr of trees) { tr.a = tr.v = 0; tr.s = ''; tr.e.style.transform = ''; }
     if (wt) wt.style.transform = '';
@@ -675,8 +688,7 @@
   // 検査が見るための窓（ページの動きは変えない）
   window.__kobo = Object.freeze({
     state: () => state, played: () => played.slice(), level, notes: () => Object.entries(SONG).flatMap(([n, l]) => l.flatMap(([i, m]) => (i === 'shake' ? [] : [].concat(m).map((x) => [n, x])))),   // 鈴のシャンは高さの無い金属音なので除く
-    bgm: () => (bgm ? { no: bgm.no, on: bgm.on, els: bgm.els.map((x) => ({ paused: x.a.paused, t: x.a.currentTime, g: x.g.gain.value, no: x.no })) } : null),
-    choose: (iso, place) => choose(new Date(iso), place || null), light, south: () => south, sky: (iso) => skyOf(new Date(iso)),
+    bgm: () => (bgm ? { no: bgm.no, on: bgm.on, i: bgm.i, els: bgm.els.map((x) => ({ paused: x.a.paused, t: x.a.currentTime, g: x.g.gain.value, no: x.no, rs: x.a.readyState })) } : null),    choose: (iso, place) => choose(new Date(iso), place || null), light, south: () => south, sky: (iso) => skyOf(new Date(iso)),
     life: Object.freeze({   // 森の時間：突風・鳥を今すぐ起こす／木と鳥の今の様子／止まる点
       gust: (d) => gust(d), bird: (kind, i) => bird(kind, i), day, running: () => running, perch: (i) => perchAt(i),
       hush: () => { nextGust = nextBird = nextCloud = nextLeaf = nextDrip = nextStar = Infinity; },   // ひとりでに起きる風・鳥・雲・葉を止める（検査の間だけ）
