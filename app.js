@@ -662,7 +662,7 @@
     if (g.a > 0.9) for (const b of birds) if (b.st === 'sit' && Math.random() < 0.6) b.leaveAt = g.t0 + Math.max(0, (d > 0 ? b.x + 525 - g.x0 : g.x0 - b.x - 525) / g.c);   // 強い風が来たら飛び立つ
   }
   // 鳥：1コマ 30×22（scenes.js の BIRD）。止まりに来る鳥は 0.45 倍＝体長およそ11（エルフの背 56 の5分の1。本人 2026-10-25「人に対して小鳥が大きすぎ」）・遠くの群れは 0.22 倍。コマ＝0 羽を上・1 羽を下・2 滑空・3 止まる・4 ついばむ。足の先(14, 20.6)を止まる点に合わせる
-  const PERCH = [['.w-tree', 66 / 260, 126 / 340], ['.w-tree', 168 / 260, 136 / 340], ['.f-cave', 65 / 150, 21 / 160]], FOOT = [14, 20.6];
+  const PERCH = [['.w-tree', 58 / 260, 126.5 / 340], ['.w-tree', 210 / 260, 163.5 / 340], ['.f-cave', 65 / 150, 21 / 160]], FOOT = [14, 20.6];   // 世界樹の2つは枝の上の面
   function perchAt(i) {
     const [sel, fx, fy] = PERCH[i], sr = stage.getBoundingClientRect(), r = stage.querySelector(sel).getBoundingClientRect();
     return [(r.left - sr.left + r.width * fx) / scale, (r.top - sr.top + r.height * fy) / scale];
@@ -747,6 +747,28 @@
     for (const tr of trees) { tr.a = tr.v = 0; tr.s = ''; tr.e.style.transform = ''; }
     if (wt) wt.style.transform = '';
   }
+
+  // ---------- 妖精の光の粉：飛んだ道筋に残り、その場でまたたいて消える（本人 2026-10-25）----------
+  const fairyEl = ui.querySelector('.fairy');
+  let dustTimer = 0, flying = false;
+  function dustAt(x, y) {
+    const d = el('i', Math.random() < 0.4 ? 'dust x' : 'dust'), s = rnd(0.7, 1.35);
+    d.style.left = `${(x + rnd(-2.5, 2.5)).toFixed(1)}px`; d.style.top = `${(y + rnd(-2.5, 2.5)).toFixed(1)}px`;
+    fairyEl.before(d);
+    d.animate([{ opacity: 0, transform: 'scale(.3)' }, { offset: 0.15, opacity: 1, transform: `scale(${s})` }, { offset: 0.38, opacity: 0.3 }, { offset: 0.6, opacity: 0.9 },
+      { opacity: 0, transform: `translate(${rnd(-2, 2).toFixed(1)}px, ${rnd(-2, 1.5).toFixed(1)}px) scale(.2)` }], { duration: rnd(900, 1600), easing: 'ease-out' }).onfinish = () => d.remove();
+  }
+  function dustTick() {
+    dustTimer = 0;
+    if (reduce || document.hidden) return;
+    const cs = getComputedStyle(fairyEl), m = cs.transform === 'none' ? null : new DOMMatrixReadOnly(cs.transform);
+    dustAt(parseFloat(cs.left) + 6, parseFloat(cs.top) + 6 + (m ? m.m42 : 0));
+    dustTimer = setTimeout(dustTick, flying ? 30 : rnd(320, 560));
+  }
+  fairyEl.addEventListener('transitionstart', (e) => { if (e.propertyName === 'left') { flying = true; clearTimeout(dustTimer); dustTick(); } });
+  for (const t of ['transitionend', 'transitioncancel']) fairyEl.addEventListener(t, (e) => { if (e.propertyName === 'left') flying = false; });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && !dustTimer) dustTick(); });
+  dustTick();
 
   // ---------- はじめ ----------
   fit(); placeTrees(); applyLight(); measure(); refreshMarks();
