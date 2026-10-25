@@ -118,17 +118,17 @@ a{color:inherit}
 .flies span:nth-child(9){left:500px;top:490px;animation-duration:10.5s,3.2s;animation-delay:-2.5s,-1.9s}
 .flies span:nth-child(10){left:640px;top:520px;animation-duration:13.5s,2.6s;animation-delay:-9s,-.6s}
 @keyframes fly{0%,100%{translate:0 0}25%{translate:14px -10px}50%{translate:-6px -22px}75%{translate:-16px -6px}}
-@keyframes blink{0%,100%{opacity:.2}40%{opacity:1}60%{opacity:.85}}
+@keyframes blink{0%,100%{opacity:.12}40%{opacity:.8}60%{opacity:.65}}
 .motes{position:absolute;inset:0;opacity:calc(1 - var(--night, 0))}
-.motes span{position:absolute;width:4px;height:4px;border-radius:50%;background:radial-gradient(circle,rgba(255,251,228,.95),rgba(255,236,180,0) 70%);animation:mote 16s linear infinite}
+.motes span{position:absolute;width:3px;height:3px;border-radius:50%;background:radial-gradient(circle,rgba(255,249,222,.9),rgba(255,228,160,0) 70%);animation:mote 28s ease-in-out infinite}   /* 陽の中の金の粒：ゆらりと昇る（拍には合わせない） */
 .motes span:nth-child(1){left:60px;top:380px}
-.motes span:nth-child(2){left:130px;top:300px;animation-duration:19s;animation-delay:-6s}
-.motes span:nth-child(3){left:210px;top:420px;animation-duration:17s;animation-delay:-11s}
-.motes span:nth-child(4){left:290px;top:330px;animation-duration:21s;animation-delay:-3s}
-.motes span:nth-child(5){left:340px;top:440px;animation-duration:18s;animation-delay:-14s}
-.motes span:nth-child(6){left:-150px;top:360px;animation-duration:20s;animation-delay:-8s}
-.motes span:nth-child(7){left:540px;top:350px;animation-duration:22s;animation-delay:-16s}
-@keyframes mote{0%{translate:0 0;opacity:0}15%{opacity:.9}85%{opacity:.6}100%{translate:34px -110px;opacity:0}}
+.motes span:nth-child(2){left:130px;top:300px;animation-duration:33s;animation-delay:-9s}
+.motes span:nth-child(3){left:210px;top:420px;animation-duration:30s;animation-delay:-17s}
+.motes span:nth-child(4){left:290px;top:330px;animation-duration:36s;animation-delay:-5s}
+.motes span:nth-child(5){left:340px;top:440px;animation-duration:31s;animation-delay:-22s}
+.motes span:nth-child(6){left:-150px;top:360px;animation-duration:34s;animation-delay:-12s}
+.motes span:nth-child(7){left:540px;top:350px;animation-duration:38s;animation-delay:-26s}
+@keyframes mote{0%{translate:0 0;opacity:0}20%{opacity:.5}50%{translate:12px -48px;opacity:.35}75%{translate:-4px -78px;opacity:.5}100%{translate:8px -110px;opacity:0}}
 /* 空から来る物：いま流れる曲（bgm.json の決まり）と同じ時間帯・季節で変わる。JS が wrap に sky-〜 を付け、粒を並べる。
    葉は空から降らさない（本人 2026-10-25「葉が空から降るのは違和感」）：世界樹の茂みから JS が舞わせる */
 .sky{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;transition:opacity 1.2s ease 2.4s}
@@ -152,14 +152,24 @@ a{color:inherit}
   background:radial-gradient(circle at 50% 100%,transparent 66%,rgba(255,130,130,.18) 67%,rgba(255,200,110,.18) 69.5%,rgba(250,240,120,.16) 72%,rgba(140,220,150,.15) 74.5%,rgba(120,170,240,.15) 77%,rgba(170,130,230,.13) 79.5%,transparent 81%);
   -webkit-mask-image:linear-gradient(to bottom,#000 55%,transparent);mask-image:linear-gradient(to bottom,#000 55%,transparent)}
 @keyframes bow{0%,100%{opacity:.55}50%{opacity:.85}}
-/* 森の精（夜・冬の夜・妖精たちのワルツの昼）：光る綿毛。ふわりと漂って、息をするように光る（エイワの森の精のように） */
-.sprites i{width:calc(26px * var(--s, 1));height:calc(26px * var(--s, 1));top:var(--y);will-change:translate,rotate,opacity;animation:spirit var(--d) ease-in-out var(--dl) infinite,glowp 3.4s ease-in-out var(--dl) infinite}   /* 1つずつ層にして、動くたびに描き直さない */
-.sprites i::before{content:"";position:absolute;inset:0;border-radius:50%;background:repeating-conic-gradient(rgba(225,250,255,.8) 0 4deg,rgba(225,250,255,0) 4deg 24deg);
-  -webkit-mask-image:radial-gradient(circle,#000 0 18%,rgba(0,0,0,.55) 48%,transparent 74%);mask-image:radial-gradient(circle,#000 0 18%,rgba(0,0,0,.55) 48%,transparent 74%)}
-.sprites i::after{content:"";position:absolute;inset:14%;border-radius:50%;background:radial-gradient(circle,#fff 0 9%,rgba(200,245,255,.85) 20%,rgba(170,235,255,.3) 38%,rgba(170,235,255,0) 70%)}   /* 光のにじみはグラデーションで（ぼかしの影は重い） */
-.sky-sprites:not([data-look=night]):not([data-look=predawn]):not([data-look=evening]) .sprites{opacity:.55}   /* 昼のワルツは淡く */
-@keyframes spirit{0%,100%{translate:0 0;rotate:0deg}25%{translate:calc(30px * var(--s, 1)) calc(36px * var(--s, 1));rotate:40deg}50%{translate:calc(-8px * var(--s, 1)) calc(86px * var(--s, 1));rotate:-12deg}75%{translate:calc(-34px * var(--s, 1)) calc(46px * var(--s, 1));rotate:28deg}}
-@keyframes glowp{0%,100%{opacity:.5}50%{opacity:1}}
+/* 森の精（夜・冬の夜・妖精たちのワルツの昼）：小さく淡い光の綿毛。ゆっくり漂い、ひとつずつ違う間で息をする（エイワの森の精のように）
+   本人 2026-10-25「空中を漂う光はもっと幻想的、そして控えめに」→ 26→16px（--k で大小）・白をやめて淡い金・明るさは半分・回らずに漂う・2倍ゆっくり */
+.sprites i{width:calc(16px * var(--s, 1) * var(--k, 1));height:calc(16px * var(--s, 1) * var(--k, 1));top:var(--y);will-change:translate,rotate,opacity;opacity:0;
+  animation:spirit var(--d) ease-in-out var(--dl) infinite,glowp var(--b, 5s) ease-in-out var(--dl) infinite}   /* 1つずつ層にして、動くたびに描き直さない */
+.sprites i::before{content:"";position:absolute;inset:0;border-radius:50%;background:repeating-conic-gradient(rgba(255,244,210,.5) 0 3deg,rgba(255,244,210,0) 3deg 30deg);
+  -webkit-mask-image:radial-gradient(circle,#000 0 14%,rgba(0,0,0,.4) 44%,transparent 70%);mask-image:radial-gradient(circle,#000 0 14%,rgba(0,0,0,.4) 44%,transparent 70%)}
+.sprites i::after{content:"";position:absolute;inset:26%;border-radius:50%;background:radial-gradient(circle,rgba(255,252,232,.95) 0 12%,rgba(255,226,156,.5) 34%,rgba(255,226,156,0) 70%)}   /* 光のにじみはグラデーションで（ぼかしの影は重い） */
+.sky-sprites:not([data-look=night]):not([data-look=predawn]):not([data-look=evening]) .sprites{opacity:.4}   /* 昼のワルツは、なお淡く */
+@keyframes spirit{0%,100%{translate:0 0;rotate:0deg}30%{translate:calc(14px * var(--s, 1)) calc(-20px * var(--s, 1));rotate:14deg}60%{translate:calc(-8px * var(--s, 1)) calc(-44px * var(--s, 1));rotate:-8deg}82%{translate:calc(-18px * var(--s, 1)) calc(-18px * var(--s, 1));rotate:6deg}}
+@keyframes glowp{0%,100%{opacity:.1}50%{opacity:.6}}
+/* 寄り添って昇り、一つになる2つの光（夜だけ・64秒に一度、20秒ほど）。片方が溶けこみ、もう片方が一度ふくらんで消える */
+.sky .twin{inset:40% auto auto 50%}
+.sky-sprites:is([data-look=night],[data-look=predawn],[data-look=evening]) .twin{display:block}
+.twin i{position:absolute;left:-6px;top:-6px;width:12px;height:12px;border-radius:50%;opacity:0;will-change:translate,opacity,scale;
+  background:radial-gradient(circle,rgba(255,252,232,.95) 0 14%,rgba(255,226,156,.5) 38%,rgba(255,226,156,0) 70%);animation:twinA 64s ease-in-out infinite}
+.twin i+i{animation-name:twinB}
+@keyframes twinA{0%,56%{translate:-50px 74px;opacity:0}61%{opacity:.5}70%{translate:-30px 40px}79%{translate:-12px 4px;opacity:.6}88%{translate:0 -34px;opacity:.6}91%,100%{translate:0 -40px;opacity:0}}
+@keyframes twinB{0%,56%{translate:44px 88px;opacity:0}62%{opacity:.45}71%{translate:22px 50px}80%{translate:10px 8px;opacity:.55}88%{translate:0 -34px;opacity:.6;scale:1}92%{translate:0 -44px;opacity:.85;scale:1.6}100%{translate:0 -78px;opacity:0;scale:1.2}}
 /* 流れ星（晴れた夜）：JS がときどき流す */
 .shoot{width:calc(90px * var(--s, 1));height:1.5px;background:linear-gradient(90deg,rgba(255,255,255,0),#fff);rotate:-18deg;opacity:0}
 /* 世界樹から舞う葉・花びら・しずく（JS が茂みや枝先の花から出す） */
@@ -173,7 +183,6 @@ a{color:inherit}
 @keyframes treeSway{0%,100%{rotate:-.25deg}50%{rotate:.25deg}}
 /* BGM が流れている間は、曲の拍（--beat）に合わせて、ごく小さく */
 .beat .w-tree{animation-duration:calc(var(--beat, .6s) * 8)}
-.beat .motes span,.beat .fairy{animation-name:mote,pulse;animation-duration:16s,var(--beat, .6s);animation-timing-function:linear,ease-in-out;animation-iteration-count:infinite}
 .beat .fairy{animation-name:bob,pulse;animation-duration:3.4s,var(--beat, .6s);animation-timing-function:ease-in-out}
 @keyframes pulse{0%,100%{scale:1}50%{scale:1.25}}
 /* 画面が見えていない時は止める */
@@ -245,8 +254,10 @@ a{color:inherit}
 /* 住人：ひらき終わった後の余韻の中で、ゆっくり現れる */
 .flat .resident{position:absolute;opacity:0;transition:opacity 1.4s ease 4.4s}
 .open .flat .resident{opacity:1}
-.flat .r-elf{left:96px;top:58px;width:29px;height:56px;transform-origin:50% 100%;animation:sway 9s ease-in-out infinite}
-.flat .r-fairy{left:180px;top:122px;width:33px;height:30px;animation:hover 6s ease-in-out infinite;filter:drop-shadow(0 0 3px rgba(255,222,160,.9))}
+.flat .r-elf{left:86px;top:48px;width:34px;height:66px;transform-origin:50% 100%;animation:sway 9s ease-in-out infinite}   /* 足もとは前と同じ高さ（114）。杖が世界樹の幹に隠れないよう、左へ */
+.w-tree .swing{position:absolute;left:30px;top:122px;width:26px;height:56px;transform-origin:50% 7%;animation:swing 5.2s ease-in-out infinite}   /* 遊び場のブランコ：左の枝から下がり、ゆっくり揺れる */
+@keyframes swing{0%,100%{rotate:-3.5deg}50%{rotate:3.5deg}}
+.flat .r-fairy{left:180px;top:121px;width:39px;height:36px;animation:hover 6s ease-in-out infinite}   /* 体を包む光は絵の中に描いた（にじみの影は重い） */
 @keyframes sway{0%,100%{transform:rotate(-.8deg)}50%{transform:rotate(.8deg)}}
 @keyframes hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
 
@@ -328,6 +339,15 @@ main>nav,main>section.about{max-width:560px;margin:0 auto;padding:0 16px}
 .kind.k-読む{background:#f6ece1;color:#7a5638}
 .item>a::after{content:"↗";position:absolute;right:4px;top:12px;color:var(--apricot)}
 .item>.box::after{content:"…";position:absolute;right:4px;top:10px;color:var(--apricot)}
+/* 泉の一覧の頭：工房の BGM を聞く（1曲ずつ・メドレー）。聞いている曲は「■」、いま流れている曲に「♪」 */
+.l-all{display:block;width:100%;margin:2px 0 4px;padding:10px 14px;border:1px solid rgba(207,138,92,.45);border-radius:22px;background:#fdf3e8;font:inherit;font-size:13.5px;color:var(--ink);text-align:center;cursor:pointer}
+.l-all::before{content:"▶ ";color:var(--apricot)}
+.l-all.on{background:#f8e4cf}
+.l-all.on::before{content:"■ "}
+.track>.box::after{content:"▶ 聞く";top:13px;font-size:11px;letter-spacing:.04em}
+.track>.box.on::after{content:"■ とめる"}
+.track>.box{padding-right:64px}
+.track.now .it-name::after{content:"　♪";color:var(--apricot)}
 
 /* 作品の状態の印（工房の世界の物）：調整中＝つぼみ・作りかけ＝双葉・準備中＝種 */
 .stat{display:inline-flex;align-items:center;gap:4px;padding:0 7px 0 5px;margin-right:6px;border-radius:8px;background:#fbede4;color:#8a5636}
@@ -358,6 +378,6 @@ main>nav,main>section.about{max-width:560px;margin:0 auto;padding:0 16px}
 }
 /* 動きを減らす設定：小さな動きは止め、時刻の光（静止画）だけ。帯は流さずに出して消す */
 @media (prefers-reduced-motion:reduce){
-  .fairy,.flat .r-elf,.flat .r-fairy,.bubble,.bubble .who,.w-tree,.sc,.spark,.lamp,.flies span,.t-stars::before,.t-stars::after,.bow{animation:none!important}
+  .fairy,.flat .r-elf,.flat .r-fairy,.w-tree .swing,.bubble,.bubble .who,.w-tree,.sc,.spark,.lamp,.flies span,.t-stars::before,.t-stars::after,.bow{animation:none!important}
   .motes,.spark,.sky{display:none}
 }
