@@ -281,6 +281,7 @@
     for (const [k, x] of Object.entries(v)) wrap.style.setProperty(k, typeof x === 'number' ? x.toFixed(3) : x);
     wrap.classList.toggle('no-night', L.night < 0.02);
     wrap.dataset.look = L.name;
+    applySky(d);
   }
   // 画面が見えていない時は、動きと BGM を止める（電池のため）
   document.addEventListener('visibilitychange', () => {
@@ -516,19 +517,64 @@
     for (const g of gusts) { const u = (t - g.t0 - (g.d > 0 ? x - g.x0 : g.x0 - x) / g.c) / g.len; if (u > 0 && u < 1) w += g.d * g.a * Math.sin(Math.PI * u) ** 2; }
     return w;
   }
-  const day = () => { const d = new Date(); return light(d.getHours() * 60 + d.getMinutes()).night < 0.3; };
+  const day = () => { const d = new Date(); return light(d.getHours() * 60 + d.getMinutes()).night < 0.3 && !(SKY && (SKY.rain || SKY.snow)); };   // 鳥と雲の影は、晴れた昼だけ
+  // ---------- 空の様子：いま流れる曲（bgm.json の決まり）と同じ時間帯・季節で決める＝聞こえる曲と、見える空がそろう ----------
+  //   朝つゆの森（01）＝光の粒。雨上がりの曲の日は 10〜11時に雨／妖精たちのワルツ（04）＝昼も森の精が淡く舞う／雨上がりのしずく（05）＝虹と、葉からのしずく
+  //   ほたるの灯る夜（02）＝ほたる・森の精・星と流れ星／雪ふる森の冬ごもり（06）＝雪と森の精（星は雲の向こう）。冬の昼は風花
+  //   空の様子は見る人の土地の天気ではなく、この森の天気（場所は聞かない・外へ問い合わせない）
+  let SKY = null;
+  function skyOf(d) {
+    const h = d.getHours() + d.getMinutes() / 60, mo = ((d.getMonth() + (south ? 6 : 0)) % 12) + 1, noon = new Date(d);
+    noon.setHours(12, 0, 0, 0);
+    const song = choose(d, null), winter = mo === 12 || mo <= 2, night = light(h * 60).night > 0.4;
+    const rain = !winter && h >= 10 && h < 11 && choose(noon, null) === '05';
+    return { song, season: winter ? 'winter' : mo <= 5 ? 'spring' : mo <= 8 ? 'summer' : 'autumn', rain, snow: song === '06', flakes: winter && !night && song !== '06',
+      flies: song === '02', sprites: ['02', '04', '06'].includes(song), bow: song === '05', stars: night && song !== '06' && !rain };
+  }
+  function applySky(d) {
+    SKY = skyOf(d);
+    for (const k of ['rain', 'snow', 'flakes', 'flies', 'sprites', 'bow', 'stars']) wrap.classList.toggle('sky-' + k, SKY[k]);
+    wrap.dataset.season = SKY.season;
+  }
+  for (const [box, n, f] of [['snow', 28, (e) => [rnd(3, 6.5), rnd(9, 16)]], ['rain', 44, () => [0, rnd(0.6, 1.0)]], ['sprites', 10, () => [0, rnd(22, 36)]]]) {   // 空の粒を並べる（位置と速さは1つずつ違う）
+    const c = wrap.querySelector('.sky .' + box);
+    for (let i = 0; i < n; i++) {
+      const e = el('i'), [z, dur] = f(e);
+      e.style.setProperty('--x', `${rnd(-4, 104).toFixed(1)}%`); e.style.setProperty('--d', `${dur.toFixed(2)}s`); e.style.setProperty('--dl', `${(-rnd(0, dur)).toFixed(2)}s`);
+      if (z) e.style.setProperty('--z', `${z.toFixed(1)}px`);
+      if (box === 'sprites') e.style.setProperty('--y', `${rnd(8, 62).toFixed(1)}%`);
+      c.append(e);
+    }
+  }
+  // 世界樹から舞う物（本人 2026-10-25「世界樹の木より上からは舞わないよう、できれば世界樹から」）：茂み（f_tree の 260×340 の中の楕円）の下半分と脇から離れる。
+  //   春は枝先の花から花びら・夏は若葉・秋は色づいた葉・冬はまれ。雨上がりは葉からしずく
+  const CROWN = [130, 80, 108, 66], BLOSSOM = [[22, 128], [247, 119], [234, 131], [221, 144]];
+  const LEAF = { spring: ['#a7c98a', '#94bd7a'], summer: ['#a7c98a', '#8fbb76', '#7fae68'], autumn: ['#e8b04a', '#d9822f', '#c95b3a', '#e6c35a'], winter: ['#b39a73'] };
+  const RATE = { spring: [2.5, 5], summer: [6, 11], autumn: [2, 4], winter: [25, 45] };
+  function treeAt(x, y) { const sr = stage.getBoundingClientRect(), r = wt.getBoundingClientRect(); return [(r.left - sr.left + r.width * x / 260) / scale, (r.top - sr.top + r.height * y / 340) / scale]; }
+  function dropLeaf(push = 0, delay = 0, fast = false, kind = '') {
+    const season = SKY ? SKY.season : 'summer', drip = kind === 'drip', petal = !drip && season === 'spring' && Math.random() < 0.7;
+    const a = rnd(-0.3, 1.3) * Math.PI, k = rnd(0.55, 1);
+    const [x0, y0] = petal ? (([bx, by]) => treeAt(bx + rnd(-5, 5), by + rnd(-4, 4)))(BLOSSOM[Math.floor(Math.random() * BLOSSOM.length)]) : treeAt(CROWN[0] + Math.cos(a) * CROWN[2] * k, CROWN[1] + Math.sin(a) * CROWN[3] * k);
+    const e = el('i', drip ? 'drip' : 'gleaf'), L = light(new Date().getHours() * 60 + new Date().getMinutes()), top = 0.85 * (1 - 0.6 * L.night);
+    if (!drip) { const cs = petal ? ['#f6c9c4', '#f2b5b8', '#f8d6d0'] : LEAF[season]; e.style.background = cs[Math.floor(Math.random() * cs.length)]; if (petal) e.style.borderRadius = '50% 50% 50% 0'; }
+    amb.append(e);
+    const fall = drip ? rnd(180, 260) : fast ? rnd(60, 160) : rnd(170, 290), dx = push + (drip ? 0 : rnd(-20, 20) + 24 * wind(720, now())), sw = drip ? 0 : petal ? 18 : 12, r = drip ? 0 : (dx >= 0 ? 1 : -1) * rnd(200, 520);
+    const P = (u, o) => ({ offset: u, transform: `translate(${(x0 + dx * u + sw * Math.sin(u * 9)).toFixed(1)}px,${(y0 + fall * u).toFixed(1)}px) rotate(${(r * u).toFixed(0)}deg)`, ...(o == null ? {} : { opacity: o }) });
+    e.animate([P(0, 0), P(0.08, top), P(0.35), P(0.65), P(0.85, top), P(1, 0)], { duration: drip ? rnd(1100, 1600) : fast ? rnd(2600, 3800) : rnd(6000, 9000), delay, easing: drip ? 'ease-in' : 'linear' }).onfinish = () => e.remove();
+    return [x0, y0];
+  }
+  function shootStar() {   // 晴れた夜の流れ星（空の上の方を、斜めに一瞬）
+    const W = wrap.clientWidth, x = rnd(0.15, 0.85) * W, y = rnd(20, 120) * scale, s = wrap.querySelector('.shoot');
+    s.animate([{ transform: `translate(${x}px,${y}px)`, opacity: 0 }, { offset: 0.15, opacity: 1 }, { transform: `translate(${x + 160 * scale}px,${y + 52 * scale}px)`, opacity: 0 }], { duration: 900, easing: 'ease-out' });
+  }
   function gust(d = Math.random() < 0.75 ? 1 : -1) {
     const g = { t0: now(), d, x0: d > 0 ? -80 : 1520, c: rnd(330, 470), a: rnd(0.6, 1.05), len: rnd(1.4, 2.2) };
     gusts.push(g);
-    for (let i = 0, n = Math.round(rnd(3, 6)); i < n; i++) {   // 突風にさらわれる葉（舞台の木のあたりから、風の向きへ）
-      const x0 = rnd(20, 370), y0 = rnd(150, 420), dx = d * rnd(150, 260), dy = rnd(50, 150), r = d * rnd(240, 620), e = el('i', 'gleaf');
-      amb.append(e);
-      e.animate([{ transform: `translate(${x0}px,${y0}px) rotate(0deg)`, opacity: 0 }, { offset: 0.1, opacity: 0.85 }, { offset: 0.5, transform: `translate(${x0 + dx * 0.55}px,${y0 + dy * 0.25}px) rotate(${r * 0.5}deg)` },
-        { transform: `translate(${x0 + dx}px,${y0 + dy}px) rotate(${r}deg)`, opacity: 0 }], { duration: rnd(2600, 3800), delay: Math.max(0, (d > 0 ? x0 + 525 - g.x0 : g.x0 - x0 - 525) / g.c * 1000), easing: 'ease-out' }).onfinish = () => e.remove();
-    }
+    if (!SKY || SKY.season !== 'winter') for (let i = 0, n = Math.round(rnd(3, 6)); i < n; i++) dropLeaf(d * rnd(150, 260), Math.max(0, (d > 0 ? 720 - g.x0 : g.x0 - 720) / g.c * 1000) + rnd(0, 400), true);   // 突風が世界樹に届いた時、茂みから葉がさらわれる
     if (g.a > 0.9) for (const b of birds) if (b.st === 'sit' && Math.random() < 0.6) b.leaveAt = g.t0 + Math.max(0, (d > 0 ? b.x + 525 - g.x0 : g.x0 - b.x - 525) / g.c);   // 強い風が来たら飛び立つ
   }
-  // 鳥：1コマ 30×22（scenes.js の BIRD）。コマ＝0 羽を上・1 羽を下・2 滑空・3 止まる・4 ついばむ。足の先(14, 20.6)を止まる点に合わせる
+  // 鳥：1コマ 30×22（scenes.js の BIRD）。止まりに来る鳥は 0.45 倍＝体長およそ11（エルフの背 56 の5分の1。本人 2026-10-25「人に対して小鳥が大きすぎ」）・遠くの群れは 0.22 倍。コマ＝0 羽を上・1 羽を下・2 滑空・3 止まる・4 ついばむ。足の先(14, 20.6)を止まる点に合わせる
   const PERCH = [['.w-tree', 66 / 260, 126 / 340], ['.w-tree', 168 / 260, 136 / 340], ['.f-cave', 65 / 150, 21 / 160]], FOOT = [14, 20.6];
   function perchAt(i) {
     const [sel, fx, fy] = PERCH[i], sr = stage.getBoundingClientRect(), r = stage.querySelector(sel).getBoundingClientRect();
@@ -543,12 +589,12 @@
     const hw = wrap.clientWidth / 2 / scale + 40, side = Math.random() < 0.5 ? -1 : 1;
     if (kind === 'flock') {   // 遠くの空を渡る小さな群れ（止まらない）
       const y = rnd(50, 140), n = Math.round(rnd(3, 5));
-      for (let i = 0; i < n; i++) { const b = newBird(0.42); b.x = 195 + side * (hw + i * 18); b.y = y + rnd(-10, 10) + i * 4; fly(b, [195 - side * (hw + 20), b.y + rnd(-25, 25)], rnd(5, 20), rnd(55, 75)); b.st = 'pass'; b.ph = rnd(0, 1); }
+      for (let i = 0; i < n; i++) { const b = newBird(0.22); b.x = 195 + side * (hw + i * 9); b.y = y + rnd(-10, 10) + i * 4; fly(b, [195 - side * (hw + 20), b.y + rnd(-25, 25)], rnd(5, 20), rnd(55, 75)); b.st = 'pass'; b.ph = rnd(0, 1); }
       return;
     }
     const free = PERCH.map((_, i) => i).filter((i) => !birds.some((x) => x.perch === i));
     if (!free.length) return;
-    const b = newBird(1); b.perch = pi != null && free.includes(pi) ? pi : free[Math.floor(Math.random() * free.length)];
+    const b = newBird(0.45); b.perch = pi != null && free.includes(pi) ? pi : free[Math.floor(Math.random() * free.length)];
     b.x = 195 + side * hw; b.y = rnd(70, 170);
     fly(b, perchAt(b.perch), rnd(30, 80), rnd(120, 160)); b.st = 'in';
   }
@@ -572,7 +618,7 @@
     if (fr !== b.f) { b.f = fr; b.e.style.backgroundPosition = `${-fr * 30}px 0`; }
     b.e.style.transform = `translate(${(b.x - FOOT[0]).toFixed(1)}px,${(b.y - FOOT[1] + bob).toFixed(1)}px) scale(${b.face * b.sc},${b.sc})`;
   }
-  let raf = 0, lastT = 0, running = false, wtBase = '', wtA = 0, wtV = 0, nextGust = 0, nextBird = 0, nextCloud = 0;
+  let raf = 0, lastT = 0, running = false, wtBase = '', wtA = 0, wtV = 0, nextGust = 0, nextBird = 0, nextCloud = 0, nextLeaf = 0, nextDrip = 0, nextStar = 0;
   function tick(ms) {
     raf = requestAnimationFrame(tick);
     const t = ms / 1000, dt = Math.min(0.05, lastT ? t - lastT : 0.016), wide = wrap.classList.contains('wide');
@@ -589,6 +635,9 @@
     if (t > nextGust) { gust(); nextGust = t + rnd(12, 30); }
     if (t > nextBird) { if (day()) bird(); nextBird = t + rnd(18, 45); }
     if (t > nextCloud) { if (day()) cloudPass(); nextCloud = t + rnd(40, 90); }
+    if (t > nextLeaf) { dropLeaf(); const [a, b] = RATE[SKY ? SKY.season : 'summer']; nextLeaf = t + rnd(a, b); }
+    if (SKY && SKY.bow && t > nextDrip) { dropLeaf(0, 0, false, 'drip'); nextDrip = t + rnd(1.2, 3); }
+    if (SKY && SKY.stars && t > nextStar) { shootStar(); nextStar = t + rnd(40, 110); }
   }
   function cloudPass() {   // 雲の影が地面を横切り、その間は陽の光が薄れる
     const W = wrap.clientWidth, cw = cloud.offsetWidth, d = Math.random() < 0.8 ? 1 : -1, dur = rnd(16000, 24000);
@@ -599,7 +648,7 @@
     if (reduce || running || !TR) return;
     running = true; lastT = 0;
     if (wt) { wt.style.transform = ''; wtBase = getComputedStyle(wt).transform; if (wtBase === 'none') wtBase = ''; }
-    const t = now(); nextGust = t + rnd(3, 8); nextBird = t + rnd(5, 12); nextCloud = t + rnd(15, 40);
+    const t = now(); nextGust = t + rnd(3, 8); nextBird = t + rnd(5, 12); nextCloud = t + rnd(15, 40); nextLeaf = t + rnd(1, 3); nextDrip = t + 1; nextStar = t + rnd(8, 30);
     raf = requestAnimationFrame(tick);
   }
   function lifeStop() {
@@ -622,10 +671,11 @@
   window.__kobo = Object.freeze({
     state: () => state, played: () => played.slice(), level, notes: () => Object.entries(SONG).flatMap(([n, l]) => l.flatMap(([i, m]) => (i === 'shake' ? [] : [].concat(m).map((x) => [n, x])))),   // 鈴のシャンは高さの無い金属音なので除く
     bgm: () => (bgm ? { no: bgm.no, on: bgm.on, els: bgm.els.map((x) => ({ paused: x.a.paused, t: x.a.currentTime, g: x.g.gain.value, no: x.no })) } : null),
-    choose: (iso, place) => choose(new Date(iso), place || null), light, south: () => south,
+    choose: (iso, place) => choose(new Date(iso), place || null), light, south: () => south, sky: (iso) => skyOf(new Date(iso)),
     life: Object.freeze({   // 森の時間：突風・鳥を今すぐ起こす／木と鳥の今の様子／止まる点
       gust: (d) => gust(d), bird: (kind, i) => bird(kind, i), day, running: () => running, perch: (i) => perchAt(i),
-      hush: () => { nextGust = nextBird = nextCloud = Infinity; },   // ひとりでに起きる風・鳥・雲を止める（検査の間だけ）
+      hush: () => { nextGust = nextBird = nextCloud = nextLeaf = nextDrip = nextStar = Infinity; },   // ひとりでに起きる風・鳥・雲・葉を止める（検査の間だけ）
+      leaf: () => dropLeaf(), crown: () => [treeAt(0, 0), treeAt(260, 0), treeAt(130, 5)],   // 葉を1枚落とす（出た所を返す）／世界樹の箱の左上・右上・茂みのてっぺん
       trees: () => trees.map((t) => ({ x: t.x, a: t.a, wide: t.wide, front: t.c[8], tf: t.e.style.transform })),
       birds: () => birds.map((b) => ({ st: b.st, x: b.x, y: b.y, f: b.f, perch: b.perch, rect: b.e.getBoundingClientRect().toJSON() })),
     }),

@@ -84,6 +84,7 @@ a{color:inherit}
   radial-gradient(circle 1px at 79% 34%,#fffbe8,transparent),radial-gradient(circle 1.4px at 87% 4%,#fff,transparent),radial-gradient(circle 1px at 94% 21%,#fff,transparent)}
 @keyframes twinkle{0%,100%{opacity:.55}50%{opacity:1}}
 .no-night .t-stars,.no-night .flies,.no-night .lamp{display:none}   /* 昼は夜の物を描かない（電池のため） */
+.stage-wrap:not(.sky-flies) .flies{display:none}   /* ほたるは「ほたるの灯る夜」（02）の時だけ（冬の夜は雪） */
 
 /* ---------- 小さな動き（いつも）：空の雲が流れる・光の粒が漂う・葉が舞う・水面がきらめく・世界樹がそよぐ・夜はほたると窓の灯り ----------
    動かすのは translate・rotate・scale・opacity だけ。主役と札の読みやすさを邪魔しない（札は上の層、粒は小さく淡く） */
@@ -127,13 +128,41 @@ a{color:inherit}
 .motes span:nth-child(6){left:-150px;top:360px;animation-duration:20s;animation-delay:-8s}
 .motes span:nth-child(7){left:540px;top:350px;animation-duration:22s;animation-delay:-16s}
 @keyframes mote{0%{translate:0 0;opacity:0}15%{opacity:.9}85%{opacity:.6}100%{translate:34px -110px;opacity:0}}
-.leaves{position:absolute;inset:0}
-.leaves span{position:absolute;top:-24px;width:9px;height:5px;border-radius:9px 0;background:linear-gradient(135deg,#a7c98a,#6f9a5c);opacity:0;animation:leaf 19s linear infinite}
-.leaves span:nth-child(1){left:40px}
-.leaves span:nth-child(2){left:250px;animation-duration:23s;animation-delay:-9s}
-.leaves span:nth-child(3){left:-140px;animation-duration:21s;animation-delay:-4s}
-.leaves span:nth-child(4){left:470px;animation-duration:25s;animation-delay:-15s}
-@keyframes leaf{0%{translate:0 0;rotate:0deg;opacity:0}8%{opacity:.75}25%{translate:30px 150px;rotate:110deg}50%{translate:-12px 320px;rotate:200deg}75%{translate:36px 480px;rotate:300deg;opacity:.7}100%{translate:8px 660px;rotate:400deg;opacity:0}}
+/* 空から来る物：いま流れる曲（bgm.json の決まり）と同じ時間帯・季節で変わる。JS が wrap に sky-〜 を付け、粒を並べる。
+   葉は空から降らさない（本人 2026-10-25「葉が空から降るのは違和感」）：世界樹の茂みから JS が舞わせる */
+.sky{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;transition:opacity 1.2s ease 2.4s}
+.stage.open~.sky{opacity:1}
+.stage.instant~.sky{transition:none}
+.sky>div,.bow{display:none;position:absolute;inset:0}
+.sky-snow .sky .snow,.sky-flakes .sky .snow,.sky-rain .sky .rain,.sky-sprites .sky .sprites,.sky-bow .bow{display:block}
+.sky i{position:absolute;top:0;left:var(--x)}
+/* 雪（冬の夜）・風花（冬の昼。はじめの8つだけ） */
+.snow i{width:var(--z);height:var(--z);border-radius:50%;background:radial-gradient(circle,#fff 0 35%,rgba(255,255,255,.6) 55%,rgba(255,255,255,0) 72%);animation:snow var(--d) linear var(--dl) infinite}
+.sky-flakes:not(.sky-snow) .snow i:nth-child(n+9){display:none}
+@keyframes snow{0%{translate:0 -20px}33%{translate:calc(14px * var(--s, 1)) calc(210px * var(--s, 1))}66%{translate:calc(-10px * var(--s, 1)) calc(430px * var(--s, 1))}100%{translate:calc(6px * var(--s, 1)) calc(660px * var(--s, 1))}}
+/* 雨（雨上がりの曲の日の朝 10〜11時）：細い斜めの筋。その間は陽の光の筋を消し、星も雲の向こう */
+.rain i{width:1.5px;height:calc(24px * var(--s, 1));background:linear-gradient(rgba(120,145,175,0),rgba(120,145,175,.6));rotate:12deg;animation:rain var(--d) linear var(--dl) infinite}
+@keyframes rain{from{translate:0 -40px}to{translate:calc(-140px * var(--s, 1)) calc(680px * var(--s, 1))}}
+.sky-rain .sky::before{content:"";position:absolute;inset:0;background:rgba(110,125,145,.12)}   /* 雨の間は、薄く曇る（札はこの上の層） */
+.sky-rain .t-rays,.sky-rain .t-stars,.sky-snow .t-stars{display:none}
+.sky-rain .t-glow{opacity:.45}
+/* 虹（雨上がりのしずくの時）：世界樹の後ろの空に、淡く息づく */
+.bow{inset:auto;left:-70px;top:70px;width:530px;height:265px;opacity:.75;animation:bow 9s ease-in-out infinite;
+  background:radial-gradient(circle at 50% 100%,transparent 66%,rgba(255,130,130,.18) 67%,rgba(255,200,110,.18) 69.5%,rgba(250,240,120,.16) 72%,rgba(140,220,150,.15) 74.5%,rgba(120,170,240,.15) 77%,rgba(170,130,230,.13) 79.5%,transparent 81%);
+  -webkit-mask-image:linear-gradient(to bottom,#000 55%,transparent);mask-image:linear-gradient(to bottom,#000 55%,transparent)}
+@keyframes bow{0%,100%{opacity:.55}50%{opacity:.85}}
+/* 森の精（夜・冬の夜・妖精たちのワルツの昼）：光る綿毛。ふわりと漂って、息をするように光る（エイワの森の精のように） */
+.sprites i{width:calc(26px * var(--s, 1));height:calc(26px * var(--s, 1));top:var(--y);will-change:translate,rotate,opacity;animation:spirit var(--d) ease-in-out var(--dl) infinite,glowp 3.4s ease-in-out var(--dl) infinite}   /* 1つずつ層にして、動くたびに描き直さない */
+.sprites i::before{content:"";position:absolute;inset:0;border-radius:50%;background:repeating-conic-gradient(rgba(225,250,255,.8) 0 4deg,rgba(225,250,255,0) 4deg 24deg);
+  -webkit-mask-image:radial-gradient(circle,#000 0 18%,rgba(0,0,0,.55) 48%,transparent 74%);mask-image:radial-gradient(circle,#000 0 18%,rgba(0,0,0,.55) 48%,transparent 74%)}
+.sprites i::after{content:"";position:absolute;inset:14%;border-radius:50%;background:radial-gradient(circle,#fff 0 9%,rgba(200,245,255,.85) 20%,rgba(170,235,255,.3) 38%,rgba(170,235,255,0) 70%)}   /* 光のにじみはグラデーションで（ぼかしの影は重い） */
+.sky-sprites:not([data-look=night]):not([data-look=predawn]):not([data-look=evening]) .sprites{opacity:.55}   /* 昼のワルツは淡く */
+@keyframes spirit{0%,100%{translate:0 0;rotate:0deg}25%{translate:calc(30px * var(--s, 1)) calc(36px * var(--s, 1));rotate:40deg}50%{translate:calc(-8px * var(--s, 1)) calc(86px * var(--s, 1));rotate:-12deg}75%{translate:calc(-34px * var(--s, 1)) calc(46px * var(--s, 1));rotate:28deg}}
+@keyframes glowp{0%,100%{opacity:.5}50%{opacity:1}}
+/* 流れ星（晴れた夜）：JS がときどき流す */
+.shoot{width:calc(90px * var(--s, 1));height:1.5px;background:linear-gradient(90deg,rgba(255,255,255,0),#fff);rotate:-18deg;opacity:0}
+/* 世界樹から舞う葉・花びら・しずく（JS が茂みや枝先の花から出す） */
+.drip{position:absolute;left:0;top:0;width:3px;height:6px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 40% 35%,#fff,rgba(190,225,245,.85) 60%,rgba(170,210,240,0) 80%);opacity:0}
 .spark{position:absolute;width:7px;height:2px;border-radius:2px;background:rgba(255,255,255,.95);opacity:0;animation:spark 3.4s ease-in-out infinite}
 .k1{left:46px;top:124px}
 .k2{left:88px;top:131px;animation-delay:-1.2s}
@@ -328,6 +357,6 @@ main>nav,main>section.about{max-width:560px;margin:0 auto;padding:0 16px}
 }
 /* 動きを減らす設定：小さな動きは止め、時刻の光（静止画）だけ。帯は流さずに出して消す */
 @media (prefers-reduced-motion:reduce){
-  .fairy,.flat .r-elf,.flat .r-fairy,.bubble,.bubble .who,.w-tree,.sc,.spark,.lamp,.flies span,.t-stars::before,.t-stars::after{animation:none!important}
-  .motes,.leaves,.spark{display:none}
+  .fairy,.flat .r-elf,.flat .r-fairy,.bubble,.bubble .who,.w-tree,.sc,.spark,.lamp,.flies span,.t-stars::before,.t-stars::after,.bow{animation:none!important}
+  .motes,.spark,.sky{display:none}
 }
