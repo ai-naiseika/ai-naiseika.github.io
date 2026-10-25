@@ -46,6 +46,7 @@ a{color:inherit}
 .tr{position:absolute;display:block;left:0;top:0;pointer-events:none;mix-blend-mode:multiply;background-repeat:no-repeat}
 .tr.s0{background-image:url(img/trees_c.webp)}
 .tr.s1{background-image:url(img/trees_w.webp)}
+.wait .tr,.wait .forest-wide{background-image:none!important}   /* 開いた後の森は、最初の絵（図書館）が出てから読む（JS が wait を外す） */
 .wide .stage>.tr,.trees-w{display:none}
 .wide .trees-w{display:block}
 .trees-w>.tr{opacity:0;transition:opacity .9s ease .1s}
@@ -254,19 +255,31 @@ a{color:inherit}
 /* 住人：ひらき終わった後の余韻の中で、ゆっくり現れる */
 .flat .resident{position:absolute;opacity:0;transition:opacity 1.4s ease 4.4s}
 .open .flat .resident{opacity:1}
-.flat .r-elf{left:86px;top:48px;width:34px;height:66px;transform-origin:50% 100%;animation:sway 9s ease-in-out infinite}   /* 足もとは前と同じ高さ（114）。杖が世界樹の幹に隠れないよう、左へ */
+.flat .r-elf{left:90px;top:61px;width:27px;height:53px;transform-origin:50% 100%;animation:sway 9s ease-in-out infinite}   /* 足もとは前と同じ高さ（114）。世界樹より目立たない大きさ（本人 2026-10-25「世界樹との大きさのバランス」→ 8割） */
 .w-tree .swing{position:absolute;left:30px;top:122px;width:26px;height:56px;transform-origin:50% 7%;animation:swing 5.2s ease-in-out infinite}   /* 遊び場のブランコ：左の枝から下がり、ゆっくり揺れる */
 @keyframes swing{0%,100%{rotate:-3.5deg}50%{rotate:3.5deg}}
 .flat .r-fairy{left:180px;top:121px;width:39px;height:36px;animation:hover 6s ease-in-out infinite}   /* 体を包む光は絵の中に描いた（にじみの影は重い） */
 @keyframes sway{0%,100%{transform:rotate(-.8deg)}50%{transform:rotate(.8deg)}}
 @keyframes hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
 
-/* 妖精の光 */
+/* 妖精の光：図書館に浮かび、本がひらくと世界樹のてっぺんへ飛ぶ。光の中に小さな体と、はばたく2枚の羽が少しだけ見え、金の粉が舞い落ちる
+   （本人 2026-10-25「妖精なら姿が少しだけ見える感じがいいし、きらきらと光の粉を出しながら飛んでほしい」）。動きは scale・rotate・translate・opacity だけ */
 .fairy{position:absolute;left:128px;top:300px;width:12px;height:12px;border-radius:50%;pointer-events:none;
   background:radial-gradient(circle,#fffbe8 0 28%,rgba(255,224,150,.9) 46%,rgba(255,214,150,0) 72%);box-shadow:0 0 16px 7px rgba(255,212,140,.42);
   animation:bob 3.4s ease-in-out infinite;transition:left 1.1s ease-in-out 2.5s,top 1.1s ease-in-out 2.5s}
 .open .fairy{left:var(--fx,150px);top:var(--fy,150px)}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.fairy .fw{position:absolute;top:-3px;width:11px;height:7px;border-radius:50%;background:radial-gradient(ellipse at 35% 50%,rgba(255,255,255,.8),rgba(214,236,255,.35) 60%,rgba(214,236,255,0) 76%);animation:flap .2s ease-in-out infinite alternate}
+.fairy .fw:nth-child(1){left:-8px;transform-origin:100% 70%;rotate:22deg}
+.fairy .fw:nth-child(2){right:-8px;transform-origin:0 70%;rotate:-22deg}
+@keyframes flap{from{scale:1 1}to{scale:.35 1}}
+.fairy .fb{position:absolute;left:4.6px;top:2.4px;width:2.8px;height:7px;border-radius:1.6px;background:rgba(255,232,210,.95)}   /* 光の中の小さな体 */
+.fairy .fd{position:absolute;left:5px;top:6px;width:2px;height:2px;border-radius:50%;background:#fff3c4;opacity:0;animation:dust 1.6s linear infinite}
+.fairy .fd:nth-child(4){animation-delay:-.32s;--dx:-6px}
+.fairy .fd:nth-child(5){animation-delay:-.64s;--dx:5px}
+.fairy .fd:nth-child(6){animation-delay:-.96s;--dx:-3px}
+.fairy .fd:nth-child(7){animation-delay:-1.28s;--dx:7px}
+@keyframes dust{0%{opacity:0;translate:0 0}12%{opacity:.95}100%{opacity:0;translate:var(--dx, 2px) 20px}}
 
 .open-hit{position:absolute;inset:0;width:100%;height:100%;background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .open .open-hit{display:none}
@@ -378,6 +391,6 @@ main>nav,main>section.about{max-width:560px;margin:0 auto;padding:0 16px}
 }
 /* 動きを減らす設定：小さな動きは止め、時刻の光（静止画）だけ。帯は流さずに出して消す */
 @media (prefers-reduced-motion:reduce){
-  .fairy,.flat .r-elf,.flat .r-fairy,.w-tree .swing,.bubble,.bubble .who,.w-tree,.sc,.spark,.lamp,.flies span,.t-stars::before,.t-stars::after,.bow{animation:none!important}
-  .motes,.spark,.sky{display:none}
+  .fairy,.fairy .fw,.flat .r-elf,.flat .r-fairy,.w-tree .swing,.bubble,.bubble .who,.w-tree,.sc,.spark,.lamp,.flies span,.t-stars::before,.t-stars::after,.bow{animation:none!important}
+  .motes,.spark,.sky,.fairy .fd{display:none}
 }

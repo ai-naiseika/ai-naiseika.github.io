@@ -28,9 +28,9 @@
 <header class="top"><button class="back" id="backBtn" type="button" hidden>‹ もどる</button><p class="brand">AI内製化工房</p><button class="sound" id="sound" type="button">音：あり</button></header>
 <main>
   <section class="map" aria-label="工房の地図">
-   <div class="stage-wrap" id="stageWrap">
+   <div class="stage-wrap wait" id="stageWrap">
     <div class="stage" id="stage">
-      <img class="forest-c" src="img/forest_c.webp" alt="" width="390" height="640">
+      <img class="forest-c" data-src="img/forest_c.webp" alt="" width="390" height="640">
       <div class="sky-clouds" aria-hidden="true"><span class="bow"></span><span class="sc sc1"></span><span class="sc sc2"></span><span class="sc sc3"></span></div>
       <img class="arch-light" src="img/arch_light.webp" alt="" width="390" height="640" fetchpriority="high">
       <img class="arch-wall" src="img/arch_wall.webp" alt="" width="390" height="640" fetchpriority="high">
@@ -38,15 +38,15 @@
       <div class="scene" aria-hidden="true">
         <div class="book" id="book">
           <span class="thick thick-r"></span><span class="thick thick-l"></span>
-          <div class="page-r"><img src="img/spread.webp" alt="" width="320" height="200"></div>
+          <div class="page-r"><img data-src="img/spread.webp" alt="" width="320" height="200"></div>
           <span class="fs fs-world"></span><span class="fs fs-spring"></span><span class="fs fs-cave"></span>
-          <div class="flat f-cloud"><img src="img/f_cloud.webp" alt="" width="320" height="400"></div>
-          <div class="flat f-spring"><img src="img/f_spring.webp" alt="" width="150" height="150"><span class="spark k1"></span><span class="spark k2"></span><span class="spark k3"></span><img class="resident r-elf" src="img/r_elf.webp" alt="" width="34" height="66"></div>
-          <div class="flat f-cave"><img src="img/f_cave.webp" alt="" width="150" height="160"></div>
-          <div class="flat f-world"><div class="w-tree"><img src="img/f_tree.webp" alt="" width="260" height="340"><img class="swing" src="img/r_swing.webp" alt="" width="26" height="56"><img class="resident r-fairy" src="img/r_fairy.webp" alt="" width="39" height="36"></div><div class="w-roots"><img src="img/f_roots.webp" alt="" width="200" height="110"></div></div>
+          <div class="flat f-cloud"><img data-src="img/f_cloud.webp" alt="" width="320" height="400"></div>
+          <div class="flat f-spring"><img data-src="img/f_spring.webp" alt="" width="150" height="150"><span class="spark k1"></span><span class="spark k2"></span><span class="spark k3"></span><img class="resident r-elf" data-src="img/r_elf.webp" alt="" width="27" height="53"></div>
+          <div class="flat f-cave"><img data-src="img/f_cave.webp" alt="" width="150" height="160"></div>
+          <div class="flat f-world"><div class="w-tree"><img data-src="img/f_tree.webp" alt="" width="260" height="340"><img class="swing" data-src="img/r_swing.webp" alt="" width="26" height="56"><img class="resident r-fairy" data-src="img/r_fairy.webp" alt="" width="39" height="36"></div><div class="w-roots"><img data-src="img/f_roots.webp" alt="" width="200" height="110"></div></div>
           <div class="cover">
             <div class="cv-front"><img src="img/cover.webp" alt="" width="160" height="200"><span class="cv-title"><span class="cv-s">AI内製化工房の</span><span class="cv-l">地図</span></span></div>
-            <div class="cv-back"><img src="img/spread.webp" alt="" width="320" height="200"></div>
+            <div class="cv-back"><img data-src="img/spread.webp" alt="" width="320" height="200"></div>
           </div>
         </div>
       </div>
@@ -62,7 +62,7 @@
         <div class="flies"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
         <div class="motes"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
       </div>
-      <span class="fairy" aria-hidden="true"></span>
+      <span class="fairy" aria-hidden="true"><i class="fw"></i><i class="fw"></i><i class="fb"></i><i class="fd"></i><i class="fd"></i><i class="fd"></i><i class="fd"></i><i class="fd"></i></span>
       <button class="open-hit" id="openBtn" type="button" aria-label="本をひらく"></button>
       <div class="labels" id="labels"></div>
       <button class="np" id="np" type="button" hidden><span class="np-mark" aria-hidden="true">♪</span><span class="np-win"><span class="np-text" id="npText"></span></span></button>
