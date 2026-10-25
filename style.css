@@ -13,6 +13,7 @@ a{color:inherit}
 :focus-visible{outline:2px solid var(--apricot);outline-offset:2px}
 .top{position:relative;text-align:center;padding:14px 16px 0}
 .brand{margin:0;font-family:var(--serif);font-size:15px;letter-spacing:.32em;color:var(--ink2)}
+.back{position:absolute;left:10px;top:8px;min-height:28px;padding:4px 11px;border:1px solid rgba(150,110,70,.26);border-radius:14px;background:rgba(252,248,238,.9);font-size:11.5px;color:var(--ink2);cursor:pointer}
 .sound{position:absolute;right:10px;top:8px;min-height:28px;padding:4px 10px;border:1px solid rgba(150,110,70,.26);border-radius:14px;background:rgba(252,248,238,.9);font-size:11.5px;color:var(--ink2);cursor:pointer}
 
 /* ---------- 舞台（設計は 390×640。JS が画面に合わせて拡大縮小） ---------- */
