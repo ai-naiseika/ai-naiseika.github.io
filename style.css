@@ -43,7 +43,7 @@ a{color:inherit}
 .stage.instant~.forest-wide{transition:none!important}
 /* 森の木（風で揺れる部品・白地）：森の地に掛け算で重ねる（森の膜は掛け算なので、前の1枚の森と同じ色）。
    箱でくくらない（くくると掛け算が箱の中だけになり、白地が出る）。スマホは舞台の中・PC は舞台の外の森の層の上。JS が根元を軸にしならせる */
-.tr{position:absolute;display:block;left:0;top:0;pointer-events:none;mix-blend-mode:multiply;background-repeat:no-repeat}
+.tr{position:absolute;display:block;left:0;top:0;pointer-events:none;background-repeat:no-repeat}   /* 紙の木（透明な地）をそのまま重ねる：手前の紙が奥を隠す（掛け算だと紙が透けた） */
 .tr.s0{background-image:url(img/trees_c.webp)}
 .tr.s1{background-image:url(img/trees_w.webp)}
 .wait .tr,.wait .forest-wide{background-image:none!important}   /* 開いた後の森は、最初の絵（図書館）が出てから読む（JS が wait を外す） */
