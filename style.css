@@ -36,16 +36,27 @@ a{color:inherit}
 /* PC など舞台の左右に空きがある時：同じ森の全体を、舞台と同じ倍率で後ろに敷く（まん中は舞台の絵と重なる） */
 .forest-wide{display:none}
 .wide .forest-wide{display:block;position:absolute;z-index:0;top:0;left:50%;width:calc(1440px * var(--s, 1));height:calc(640px * var(--s, 1));margin-left:calc(-720px * var(--s, 1));
-  background:url(img/forest_c.webp) 50% 0/calc(390px * var(--s, 1)) calc(640px * var(--s, 1)) no-repeat,url(img/forest_w.webp) 0 0/100% 100% no-repeat;opacity:0;transition:opacity .9s ease .1s;
+  background-position:50% 0,0 0;background-size:calc(390px * var(--s, 1)) calc(640px * var(--s, 1)),100% 100%;background-repeat:no-repeat;opacity:0;transition:opacity .9s ease .1s;
   -webkit-mask-image:linear-gradient(to right,transparent,#000 4%,#000 96%,transparent);mask-image:linear-gradient(to right,transparent,#000 4%,#000 96%,transparent)}
 .wide .forest-c{display:none}   /* 左右に空きがある時は、まん中の絵も同じ1枚の層に描く（舞台のふちに境目の筋を出さない） */
 .stage.open~.forest-wide{opacity:1}
 .stage.instant~.forest-wide{transition:none!important}
-/* 森の木（風で揺れる部品・白地）：森の地に掛け算で重ねる（森の膜は掛け算なので、前の1枚の森と同じ色）。
-   箱でくくらない（くくると掛け算が箱の中だけになり、白地が出る）。スマホは舞台の中・PC は舞台の外の森の層の上。JS が根元を軸にしならせる */
-.tr{position:absolute;display:block;left:0;top:0;pointer-events:none;background-repeat:no-repeat}   /* 紙の木（透明な地）をそのまま重ねる：手前の紙が奥を隠す（掛け算だと紙が透けた） */
-.tr.s0{background-image:url(img/trees_c.webp)}
-.tr.s1{background-image:url(img/trees_w.webp)}
+/* 森の木（風で揺れる部品）：透明な地の紙の木を、森の地にそのまま重ねる（手前の紙が奥を隠す。掛け算だと紙が透けた）。
+   スマホは舞台の中・PC は舞台の外の森の層の上。JS が根元を軸にしならせる */
+.tr{position:absolute;display:block;left:0;top:0;pointer-events:none;background-repeat:no-repeat}
+/* 季節ごとの森（本人 2026-10-26）：JS が今の季節を data-season に入れ、その季節の絵だけを読む */
+[data-season=spring] .forest-wide{background-image:url(img/forest_c_spring.webp),url(img/forest_w_spring.webp)}
+[data-season=summer] .forest-wide{background-image:url(img/forest_c_summer.webp),url(img/forest_w_summer.webp)}
+[data-season=autumn] .forest-wide{background-image:url(img/forest_c_autumn.webp),url(img/forest_w_autumn.webp)}
+[data-season=winter] .forest-wide{background-image:url(img/forest_c_winter.webp),url(img/forest_w_winter.webp)}
+[data-season=spring] .tr.s0{background-image:url(img/trees_c_spring.webp)}
+[data-season=spring] .tr.s1{background-image:url(img/trees_w_spring.webp)}
+[data-season=summer] .tr.s0{background-image:url(img/trees_c_summer.webp)}
+[data-season=summer] .tr.s1{background-image:url(img/trees_w_summer.webp)}
+[data-season=autumn] .tr.s0{background-image:url(img/trees_c_autumn.webp)}
+[data-season=autumn] .tr.s1{background-image:url(img/trees_w_autumn.webp)}
+[data-season=winter] .tr.s0{background-image:url(img/trees_c_winter.webp)}
+[data-season=winter] .tr.s1{background-image:url(img/trees_w_winter.webp)}
 .wait .tr,.wait .forest-wide{background-image:none!important}   /* 開いた後の森は、最初の絵（図書館）が出てから読む（JS が wait を外す） */
 .wide .stage>.tr,.trees-w{display:none}
 .wide .trees-w{display:block}
