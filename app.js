@@ -338,7 +338,7 @@
     scale = Math.max(0.62, Math.min(innerWidth / 390, (innerHeight - 96) / 640, 1.45));
     stage.style.transform = ui.style.transform = `scale(${scale})`;
     wrap.style.height = `${Math.round(640 * scale)}px`;
-    wrap.style.setProperty('--s', String(scale));
+    document.documentElement.style.setProperty('--s', String(scale));   // 舞台の倍率（PC では舞台の外の字にも掛ける）
     wrap.classList.toggle('wide', innerWidth > Math.round(390 * scale) + 1);   // 左右に空きがある時だけ広い森
    // 壁が画面の外へ出きる大きさ
     stage.style.setProperty('--wall-end', Math.max(5, innerWidth / 2 / scale / 90 + 1.5).toFixed(2));
@@ -395,10 +395,10 @@
     lifeStart(); refreshBack();
   }
   function instantly(fn) { setCls('instant', true); fn(); void stage.offsetWidth; requestAnimationFrame(() => setCls('instant', false)); }
-  // 開いた後に要る絵（森・見開き・飛び出す紙・住人・木の部品）は、最初の絵（図書館）が出てから読む。先に押されたら、その時に読む
+  // 開いた後の絵は、最初の絵の後に読む（先に押されたら、その時に）
   function later() {
     if (!wrap.classList.contains('wait')) return;
-    const season = skyOf(new Date()).season;   // 森は今の季節の絵だけ
+    const season = (location.search.match(/season=(spring|summer|autumn|winter)/) || [])[1] || skyOf(new Date()).season;   // 森は今の季節の絵だけ（?season= で見比べ）
     wrap.dataset.season = season;
     for (const im of document.querySelectorAll('img[data-src]')) { im.src = im.dataset.src.replace('_autumn.', `_${season}.`); im.removeAttribute('data-src'); }
     wrap.classList.remove('wait');
@@ -662,7 +662,7 @@
     if (!SKY || SKY.season !== 'winter') for (let i = 0, n = Math.round(rnd(3, 6)); i < n; i++) dropLeaf(d * rnd(150, 260), Math.max(0, (d > 0 ? 720 - g.x0 : g.x0 - 720) / g.c * 1000) + rnd(0, 400), true);   // 突風が世界樹に届いた時、茂みから葉がさらわれる
     if (g.a > 0.9) for (const b of birds) if (b.st === 'sit' && Math.random() < 0.6) b.leaveAt = g.t0 + Math.max(0, (d > 0 ? b.x + 525 - g.x0 : g.x0 - b.x - 525) / g.c);   // 強い風が来たら飛び立つ
   }
-  // 鳥：1コマ 30×22（scenes.js の BIRD）。止まりに来る鳥は 0.45 倍＝体長およそ11（エルフの背 56 の5分の1。本人 2026-10-25「人に対して小鳥が大きすぎ」）・遠くの群れは 0.22 倍。コマ＝0 羽を上・1 羽を下・2 滑空・3 止まる・4 ついばむ。足の先(14, 20.6)を止まる点に合わせる
+  // 鳥：1コマ 30×22（scenes.js の BIRD）。止まりに来る鳥は 0.45 倍・遠くの群れは 0.22 倍。コマ＝0 羽を上・1 羽を下・2 滑空・3 止まる・4 ついばむ。足の先(14, 20.6)を止まる点に合わせる
   const PERCH = [['.w-tree', 58 / 260, 126.5 / 340], ['.w-tree', 210 / 260, 163.5 / 340], ['.f-cave', 65 / 150, 21 / 160]], FOOT = [14, 20.6];   // 世界樹の2つは枝の上の面
   function perchAt(i) {
     const [sel, fx, fy] = PERCH[i], sr = stage.getBoundingClientRect(), r = stage.querySelector(sel).getBoundingClientRect();

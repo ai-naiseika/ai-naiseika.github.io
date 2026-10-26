@@ -38,6 +38,9 @@ a{color:inherit}
 .wide .forest-wide{display:block;position:absolute;z-index:0;top:0;left:50%;width:calc(1440px * var(--s, 1));height:calc(640px * var(--s, 1));margin-left:calc(-720px * var(--s, 1));
   background-position:50% 0,0 0;background-size:calc(390px * var(--s, 1)) calc(640px * var(--s, 1)),100% 100%;background-repeat:no-repeat;opacity:0;transition:opacity .9s ease .1s;
   -webkit-mask-image:linear-gradient(to right,transparent,#000 4%,#000 96%,transparent);mask-image:linear-gradient(to right,transparent,#000 4%,#000 96%,transparent)}
+/* PC など左右に空きがある時：舞台の外の字・一覧の窓も、舞台と同じ倍率で（本人 2026-10-26「PCだと世界樹が固定で文字だけが大小変わって使いづらい」）。スマホは今のまま */
+body:has(.wide) :is(.top,.prompt,.places,.about,.foot,.sheet){zoom:var(--s,1)}
+body:has(.wide) .sheet{max-width:600px;margin:0 auto;max-height:calc(84vh / var(--s,1))}   /* 倍率を掛けた後に画面の 84% に収まるよう、高さの上限は割り戻す（掛けたままだと窓の上が画面の外へ出た） */
 .wide .forest-c{display:none}   /* 左右に空きがある時は、まん中の絵も同じ1枚の層に描く（舞台のふちに境目の筋を出さない） */
 .stage.open~.forest-wide{opacity:1}
 .stage.instant~.forest-wide{transition:none!important}
