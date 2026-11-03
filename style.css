@@ -358,6 +358,10 @@ main>nav,main>section.about{max-width:560px;margin:0 auto;padding:0 16px}
 .sheet-body{overflow-y:auto;padding:4px 18px 28px;-webkit-overflow-scrolling:touch}
 .grp{margin:16px 0 6px;font-size:12.5px;letter-spacing:.08em;color:var(--apricot)}
 .items{list-style:none;margin:0;padding:0}
+.loading{margin:22px 4px;font-size:13.5px;color:var(--ink);text-align:center;animation:breathe 1.6s ease-in-out infinite alternate}
+.retry{display:block;margin:12px auto 0;padding:8px 22px;border:1px solid rgba(207,138,92,.45);border-radius:22px;background:#fdf3e8;font:inherit;font-size:13.5px;color:var(--ink);cursor:pointer}
+.loading:has(.retry){animation:none}
+@keyframes breathe{to{opacity:.55}}
 .item>a,.item>.box{position:relative;display:block;width:100%;padding:11px 26px 11px 0;border:0;border-bottom:1px dashed rgba(150,110,70,.25);background:none;text-align:left;text-decoration:none;cursor:pointer}
 .it-name{display:block;font-size:14.5px;line-height:1.5}
 .it-note{display:block;font-size:12.5px;line-height:1.5;color:var(--ink2);margin-top:2px}
@@ -407,6 +411,6 @@ main>nav,main>section.about{max-width:560px;margin:0 auto;padding:0 16px}
 }
 /* 動きを減らす設定：小さな動きは止め、時刻の光（静止画）だけ。帯は流さずに出して消す */
 @media (prefers-reduced-motion:reduce){
-  .fairy,.fairy .fw,.flat .r-elf,.flat .r-fairy,.w-tree .swing,.bubble,.bubble .who,.w-tree,.sc,.spark,.lamp,.flies span,.t-stars::before,.t-stars::after,.bow{animation:none!important}
+  .fairy,.fairy .fw,.flat .r-elf,.flat .r-fairy,.w-tree .swing,.bubble,.bubble .who,.w-tree,.sc,.spark,.lamp,.flies span,.t-stars::before,.t-stars::after,.bow,.loading{animation:none!important}
   .motes,.spark,.sky,.dust{display:none}
 }
