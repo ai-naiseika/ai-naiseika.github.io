@@ -378,7 +378,8 @@ main>nav,main>section.about{max-width:560px;margin:0 auto;padding:0 16px}
 .th.on>img{opacity:1}
 .tx{display:block;min-width:0}
 /* 見る・触れる作品は2列の札（絵が上・題が下） */
-.items.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 13px;padding:6px 2px 4px}
+.items.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-flow:row dense;gap:18px 13px;padding:6px 2px 4px}
+.cards>.bubble{grid-column:1/-1;padding-top:0}
 .cards .item>a,.cards .item>.box{padding:0 0 2px;border-bottom:0}
 .cards .item>a::after,.cards .item>.box::after{content:none}
 .cards .th{margin-bottom:9px}
@@ -387,6 +388,7 @@ main>nav,main>section.about{max-width:560px;margin:0 auto;padding:0 16px}
 .rows .item>a,.rows .item>.box{display:flex;gap:12px;align-items:flex-start;padding:11px 22px 11px 2px}
 .rows .th{flex:none;width:116px;margin-top:2px}
 .rows .tx{flex:1}
+.rows.one .th{width:44%}
 .rows .it-name{font-size:13.5px;line-height:1.5}
 /* 泉の一覧の頭：工房の BGM を聞く（1曲ずつ・メドレー）。聞いている曲は「■」、いま流れている曲に「♪」 */
 .l-all{display:block;width:100%;margin:2px 0 4px;padding:10px 14px;border:1px solid rgba(207,138,92,.45);border-radius:22px;background:#fdf3e8;font:inherit;font-size:13.5px;color:var(--ink);text-align:center;cursor:pointer}
