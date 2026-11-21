@@ -400,10 +400,11 @@ main>nav,main>section.about{max-width:560px;margin:0 auto;padding:0 16px}
 .track>.box{padding-right:64px}
 .track.now .it-name::after{content:"　♪";color:var(--apricot)}
 
-/* 作品の状態の印（工房の世界の物）：調整中＝つぼみ・作りかけ＝双葉・準備中＝種 */
+/* 作品の状態の印（工房の世界の物）：調整中＝つぼみ・作りかけ＝双葉・準備中＝種・育成中＝若木（見られる・みんなで育てていく途中） */
 .stat{display:inline-flex;align-items:center;gap:4px;padding:0 7px 0 5px;margin-right:6px;border-radius:8px;background:#fbede4;color:#8a5636}
 .item[data-status="作りかけ"] .stat{background:#edf4e3;color:#4b6840}
 .item[data-status="準備中"] .stat{background:#f0ede2;color:#6c6552}
+.item[data-status="育成中"] .stat{background:#e6f1ea;color:#3f6b52}
 .mk{position:relative;display:inline-block;flex:none}
 .mk.bud{width:9px;height:11px}
 .mk.bud::before{content:"";position:absolute;left:1px;top:1px;width:7px;height:7px;border-radius:50% 0 50% 50%;transform:rotate(-45deg);background:radial-gradient(circle at 40% 60%,#f8cfc6,#e0897d)}
@@ -413,6 +414,8 @@ main>nav,main>section.about{max-width:560px;margin:0 auto;padding:0 16px}
 .mk.sprout::before{left:0;border-radius:5px 0 5px 0;transform:rotate(-18deg)}
 .mk.sprout::after{right:0;border-radius:0 5px 0 5px;transform:rotate(18deg)}
 .mk.seed{width:7px;height:9px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 40% 35%,#d4ab7e,#a7784b)}
+.mk.sapling{width:10px;height:12px;background:linear-gradient(#8a6a4a,#8a6a4a) 50% 100%/2px 6px no-repeat}
+.mk.sapling::before{content:"";position:absolute;left:1px;top:0;width:8px;height:8px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#7ea56a,#5f8a50)}
 
 /* 住人（妖精）の吹き出し：完成でない作品を押すと出る */
 .bubble{display:flex;align-items:flex-start;gap:7px;padding:9px 0 12px 2px;animation:pop .35s ease-out}
