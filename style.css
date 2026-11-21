@@ -372,6 +372,22 @@ main>nav,main>section.about{max-width:560px;margin:0 auto;padding:0 16px}
 .kind.k-読む{background:#f6ece1;color:#7a5638}
 .item>a::after{content:"↗";position:absolute;right:4px;top:12px;color:var(--apricot)}
 .item>.box::after{content:"…";position:absolute;right:4px;top:10px;color:var(--apricot)}
+/* サムネイル（本人 2026-11-21）：絵は紙に貼った1枚。黒い枠でなく、白い切り口と後ろへ落ちる淡い影（工房の絵の約束）。読むまでは紙の色で場所を取る */
+.th{position:relative;display:block;aspect-ratio:320/168;border-radius:5px;overflow:hidden;background:#ece2cf;box-shadow:0 0 0 2px #fffdf7,1px 3px 7px rgba(110,90,60,.24)}
+.th>img{display:block;width:100%;height:100%;opacity:0;transition:opacity .4s}
+.th.on>img{opacity:1}
+.tx{display:block;min-width:0}
+/* 見る・触れる作品は2列の札（絵が上・題が下） */
+.items.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 13px;padding:6px 2px 4px}
+.cards .item>a,.cards .item>.box{padding:0 0 2px;border-bottom:0}
+.cards .item>a::after,.cards .item>.box::after{content:none}
+.cards .th{margin-bottom:9px}
+.cards .it-name{font-size:13.5px;line-height:1.45}
+/* 読む物（題の長い記事）は、左に小さな絵・右に題の行 */
+.rows .item>a,.rows .item>.box{display:flex;gap:12px;align-items:flex-start;padding:11px 22px 11px 2px}
+.rows .th{flex:none;width:116px;margin-top:2px}
+.rows .tx{flex:1}
+.rows .it-name{font-size:13.5px;line-height:1.5}
 /* 泉の一覧の頭：工房の BGM を聞く（1曲ずつ・メドレー）。聞いている曲は「■」、いま流れている曲に「♪」 */
 .l-all{display:block;width:100%;margin:2px 0 4px;padding:10px 14px;border:1px solid rgba(207,138,92,.45);border-radius:22px;background:#fdf3e8;font:inherit;font-size:13.5px;color:var(--ink);text-align:center;cursor:pointer}
 .l-all::before{content:"▶ ";color:var(--apricot)}
@@ -408,9 +424,11 @@ main>nav,main>section.about{max-width:560px;margin:0 auto;padding:0 16px}
 @media (min-width:700px){
   .sheet{left:50%;right:auto;bottom:auto;top:50%;width:560px;max-height:80vh;border-radius:16px;transform:translate(-50%,-46%);opacity:0;transition:transform .3s,opacity .3s}
   .sheet.show{transform:translate(-50%,-50%);opacity:1}
+  .rows .th{width:150px}
 }
 /* 動きを減らす設定：小さな動きは止め、時刻の光（静止画）だけ。帯は流さずに出して消す */
 @media (prefers-reduced-motion:reduce){
   .fairy,.fairy .fw,.flat .r-elf,.flat .r-fairy,.w-tree .swing,.bubble,.bubble .who,.w-tree,.sc,.spark,.lamp,.flies span,.t-stars::before,.t-stars::after,.bow,.loading{animation:none!important}
   .motes,.spark,.sky,.dust{display:none}
+  .th>img{transition:none}
 }
